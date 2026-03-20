@@ -6,6 +6,10 @@ account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
 
 workers_dev = true
 
+[[services]]
+binding = "SIDDARTHA"
+service = "siddartha"
+
 # Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
 #   MEM0_API_KEY
 #   NOTION_TOKEN

@@ -9,8 +9,7 @@ const CORS_HEADERS = {
 const SIDDHARTHA_BASE_URL = "https://siddartha.harveytagalicud7.workers.dev";
 
 // Helper: Fetch with Siddhartha backend
-async function callSiddhartha(path, method = "POST", body = null, headers = {}) {
-  const url = `${SIDDHARTHA_BASE_URL}${path}`;
+async function callSiddhartha(env, path, method = "POST", body = null, headers = {}) {
   const options = {
     method,
     headers: {
@@ -19,7 +18,9 @@ async function callSiddhartha(path, method = "POST", body = null, headers = {}) 
     },
     ...(body && { body: JSON.stringify(body) })
   };
-  const res = await fetch(url, options);
+  const res = env?.SIDDARTHA
+    ? await env.SIDDARTHA.fetch(new Request(`https://siddartha.internal${path}`, options))
+    : await fetch(new Request(`${SIDDHARTHA_BASE_URL}${path}`, options));
   if (!res.ok) throw new Error(`Siddhartha error: ${res.status}`);
   return res.json();
 }
@@ -89,7 +90,7 @@ async function handleRequest(request, env, ctx) {
       ? fetch(discordWebhookUrl).then(r => r.ok).catch(() => false)
       : Promise.resolve(false);
     const [siddhartha, notion, discord] = await Promise.allSettled([
-      fetch(`${SIDDHARTHA_BASE_URL}/health`).then(r => r.ok).catch(() => false),
+      callSiddhartha(env, "/health", "GET").then(() => true).catch(() => false),
       fetch("https://api.notion.com/v1/databases", {
         headers: { "Authorization": `Bearer ${notionToken}`, "Notion-Version": "2022-06-28" }
       }).then(r => r.ok).catch(() => false),
@@ -129,7 +130,7 @@ async function handleRequest(request, env, ctx) {
 
     try {
       // Call Siddhartha's /api/route endpoint
-      const siddharthaResponse = await callSiddhartha("/api/route", "POST", {
+      const siddharthaResponse = await callSiddhartha(env, "/api/route", "POST", {
         userRequest: `@orion:default ${message}`
       });
 
