@@ -1,5 +1,5 @@
 // gemini-notion-proxy.js
-// Cloudflare Worker proxy for secure Gemini + Notion API access
+// Cloudflare Worker proxy for secure Gemini + Notion API access + :P
 import { env } from "cloudflare:workers";
 
 // Access in top-level or anywhere
