@@ -6,6 +6,10 @@ account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
 
 workers_dev = true
 
+[[services]]
+binding = "API"
+service = "soul-os-api"
+
 # D1 Databases (managed in Cloudflare dashboard):
 #   DB - D1 database
 

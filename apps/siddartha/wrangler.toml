@@ -6,9 +6,9 @@ account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
 
 workers_dev = true
 
-# KV Namespaces (binding names match worker code; IDs are managed in Cloudflare dashboard):
-#   MAILBOX          - KV namespace for inter-agent message storage
-#   CAMPFIRE_LEDGER  - KV namespace for campfire event deduplication
+[[services]]
+binding = "COMET"
+service = "comet-courier"
 
 # Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
 #   MEM0_API_KEY
