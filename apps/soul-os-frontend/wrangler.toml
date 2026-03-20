@@ -10,8 +10,16 @@ workers_dev = true
 binding = "API"
 service = "soul-os-api"
 
-# D1 Databases (managed in Cloudflare dashboard):
-#   DB - D1 database
+[[d1_databases]]
+binding = "DB"
+database_name = "soul-os-cognitive-db"
+database_id = "d7ec816c-693d-4e6b-99ff-ead94fb44f16"
 
-# Workers AI (managed in Cloudflare dashboard):
-#   AI - Workers AI binding
+[ai]
+binding = "AI"
+
+# Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
+#   MASTER_KEY
+#   OPENAI_API_KEY
+#   OPENAI_BASE_URL
+#   ANTHROPIC_API_KEY
