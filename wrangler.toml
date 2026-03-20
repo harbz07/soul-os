@@ -1,5 +1,5 @@
 name = "gemini-notion-proxy"
-main = "apps/gemini-notion-proxy/bridge-worker.js"
+main = "apps/gemini-notion-proxy/gemini-notion-proxy.js"
 compatibility_date = "2024-11-01"
 
 # Your Cloudflare account ID (from the dashboard)
