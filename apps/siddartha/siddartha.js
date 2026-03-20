@@ -173,6 +173,29 @@ Embody this identity fully. Stay in character. Be useful to Harvey.`;
   }
 }
 
+// ── Hearth Write-Back ────────────────────────────────
+// Writes agent exchange summaries to mem0 under user_id "hearth" — the
+// Constellation's shared memory of what was said around the fire.
+// This is non-blocking (always called via ctx.waitUntil) and silently no-ops
+// when MEM0_API_KEY is absent.
+
+async function writeBackToHearth(env, { agentName, epithet, request, response, threadId, ts }) {
+  if (!env.MEM0_API_KEY) return;
+  const reqSnippet = request.length > 120 ? `${request.slice(0, 120)}...` : request;
+  const content = threadId
+    ? `[${threadId}] ${epithet} said in response to "${reqSnippet}": ${response.slice(0, 400)}`
+    : `${epithet} said in response to "${reqSnippet}": ${response.slice(0, 400)}`;
+  try {
+    await fetch("https://api.mem0.ai/v1/memories/", {
+      method: "POST",
+      headers: { "Authorization": `Token ${env.MEM0_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content }], user_id: "hearth" })
+    });
+  } catch (err) {
+    console.error(`[hearth] write-back failed for ${agentName} at ${ts}:`, err.message);
+  }
+}
+
 // ── Notion / Discord Dispatch ─────────────────────────
 
 async function dispatchToNotion(env, { source, trigger, agentId, payload, ts, db_id }) {
@@ -647,6 +670,14 @@ var siddartha_hydrated_default = {
               payload: `**Request:** ${requestText.slice(0, 300)}\n\n**Response:** ${String(agentResponse).slice(0, 1200)}`,
               ts
             }));
+            ctx.waitUntil(writeBackToHearth(env, {
+              agentName,
+              epithet: agentConfig.epithet,
+              request: requestText,
+              response: String(agentResponse),
+              threadId: null,
+              ts
+            }));
 
             return jsonResponse({ status: "success", agent: agentName, epithet: agentConfig.epithet, intent, response: agentResponse });
           }
@@ -667,6 +698,14 @@ var siddartha_hydrated_default = {
             trigger: "T1",
             agentId: agentName,
             payload: `**Request:** ${requestText.slice(0, 300)}\n\n**Response:** ${String(agentResponse).slice(0, 1200)}`,
+            ts
+          }));
+          ctx.waitUntil(writeBackToHearth(env, {
+            agentName,
+            epithet: agentConfig.epithet,
+            request: requestText,
+            response: String(agentResponse),
+            threadId: null,
             ts
           }));
 
@@ -1162,6 +1201,15 @@ var siddartha_hydrated_default = {
           }
 
           const msgTs = new Date().toISOString();
+
+          ctx.waitUntil(writeBackToHearth(env, {
+            agentName,
+            epithet: agentConfig.epithet,
+            request: seed,
+            response,
+            threadId,
+            ts: msgTs
+          }));
 
           transcript.push({
             round,
