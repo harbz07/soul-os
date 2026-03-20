@@ -1,0 +1,13 @@
+name = "soul-os-frontend"
+main = "index.js"
+compatibility_date = "2024-11-01"
+
+account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
+
+workers_dev = true
+
+# D1 Databases (managed in Cloudflare dashboard):
+#   DB - D1 database
+
+# Workers AI (managed in Cloudflare dashboard):
+#   AI - Workers AI binding

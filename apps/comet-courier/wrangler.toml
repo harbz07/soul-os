@@ -1,0 +1,11 @@
+name = "comet-courier"
+main = "comet-courier.js"
+compatibility_date = "2024-11-01"
+
+account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
+
+workers_dev = true
+
+# Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
+#   COMET_SECRET
+#   PERPLEXITY_API_KEY
