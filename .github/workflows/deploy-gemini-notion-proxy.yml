@@ -1,0 +1,32 @@
+name: Deploy gemini-notion-proxy
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "apps/gemini-notion-proxy/**"
+      - "wrangler.toml"
+      - ".github/workflows/deploy-gemini-notion-proxy.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Publish Worker with Wrangler
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: wrangler deploy
