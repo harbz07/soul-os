@@ -1,0 +1,5 @@
+{
+  "name": "comet-courier",
+  "description": "Constellation message delivery and async execution",
+  "primitives": ["dispatch", "waypoint", "passage"]
+}

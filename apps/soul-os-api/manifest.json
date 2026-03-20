@@ -1,0 +1,21 @@
+{
+  "gateway": "soul-os-api",
+  "domain": "api.soul-os.cc",
+  "status": "operational",
+  "version": "2.0.0",
+  "description": "Constellation API Gateway",
+  "upstream": "siddartha (service binding)",
+  "routes": {
+    "GET  /": "This manifest",
+    "GET  /health": "Gateway + upstream health",
+    "GET  /waypoints": "Siddhartha waypoint registry",
+    "GET  /mailbox/:agent": "Siddhartha agent mailbox",
+    "POST /v1/chat/completions": "Siddhartha OpenAI-compatible chat",
+    "POST /api/route": "Siddhartha memory-hydrated agent call",
+    "POST /dispatch": "Siddhartha passage dispatch",
+    "POST /message": "Siddhartha inter-agent message",
+    "POST /chain": "Siddhartha multi-hop chain",
+    "POST /parietal": "Siddhartha semantic gravity",
+    "POST /log": "Siddhartha atlas session log"
+  }
+}
