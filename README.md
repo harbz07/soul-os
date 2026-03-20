@@ -1,12 +1,12 @@
-# Soul-OS
+# soulOS
 
-Soul-OS is a constellation-based operating system for AI agents – a runtime where multiple models, tools, and memory systems act as collaborators instead of isolated endpoints.
+soulOS is a constellation-based operating system for AI agents – a runtime where multiple models, tools, and memory systems act as collaborators instead of isolated endpoints.
 
-At its core, Soul-OS wires together:
+At its core, soulOS wires together:
 
 - **Siddartha** – the inner monastery / core Constellation logic (agent routing, calls to LLMs, memory hydration, Notion/Discord dispatch, KV mailbox, parietal overlay & campfire engine).
-- **Soul-OS API** – the public gateway Worker that fronts `api.soul-os.cc` and routes external requests into Siddartha.
-- **Soul-OS Frontend** – the Cognitive Runtime UI served at `soul-os.cc`, used to interact with and observe the constellation.
+- **soulOS API** – the public gateway Worker that fronts `api.soul-os.cc` and routes external requests into Siddartha.
+- **soulOS Frontend** – the Cognitive Runtime UI served at `soul-os.cc`, used to interact with and observe the constellation.
 - **Comet Courier** – the transit layer for dispatching messages, passages, and waypoints across the ecosystem.
 - **Bridge / Gemini-Notion Proxy** – integration Workers that safely connect external APIs (Mem0, Notion, Discord, etc.) into the Constellation without exposing secrets to the frontend.
 
@@ -22,7 +22,7 @@ The `apps/` directory holds each Worker as its own app; `docs/` captures archite
 
 ## Status
 
-Soul-OS is under active development and currently focused on:
+soulOS is under active development and currently focused on:
 
 - Syncing all live Cloudflare Workers into this repository as the source of truth.
 - Wiring GitHub-based CI/CD to deploy Workers via Wrangler.
