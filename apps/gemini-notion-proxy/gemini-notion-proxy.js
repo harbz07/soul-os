@@ -99,7 +99,6 @@ async function proxyGemini(request, env) {
 
   const headers = new Headers(request.headers);
   headers.delete("Authorization");
-  headers.delete("authorization");
   headers.set("Authorization", `Bearer ${geminiApiKey}`);
   headers.set("Content-Type", "application/json");
 
@@ -133,7 +132,6 @@ async function proxyNotion(request, env) {
 
   const headers = new Headers(request.headers);
   headers.delete("Authorization");
-  headers.delete("authorization");
   headers.set("Authorization", `Bearer ${notionToken}`);
   headers.set("Notion-Version", "2022-06-28");
   headers.set("Content-Type", "application/json");
