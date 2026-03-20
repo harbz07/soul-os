@@ -1,11 +1,11 @@
-name: Deploy gemini-notion-proxy
+name: Deploy bridge-worker
 
 on:
   push:
     branches: [ main ]
     paths:
-      - "apps/gemini-notion-proxy/**"
-      - ".github/workflows/deploy-gemini-notion-proxy.yml"
+      - "apps/bridge-worker/**"
+      - ".github/workflows/deploy-bridge-worker.yml"
 
 jobs:
   deploy:
@@ -28,4 +28,4 @@ jobs:
       - name: Deploy Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: wrangler deploy --config apps/gemini-notion-proxy/wrangler.toml
+        run: wrangler deploy --config apps/bridge-worker/wrangler.toml
