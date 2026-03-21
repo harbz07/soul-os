@@ -3,280 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>urtrashbin@yourdesktop.lit</title>
+    <title>CONSTELLATION SWITCHBOARD // soulOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'VT323', monospace;
-            background-color: #050505;
-            color: #33ff33;
-            overflow: hidden;
-        }
-        
-        /* CRT Scanline Effect */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #e5e7eb; }
+        .terminal-font { font-family: 'VT323', monospace; }
+        .crt-overlay::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 50;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+            z-index: 50; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
-
-        .brutalist-card {
-            background-color: #0a0a0a;
-            border: 2px solid #333;
-            box-shadow: 8px 8px 0px #1a1a1a;
-            position: relative;
-        }
-
-        .brutalist-card.alert {
-            border-color: #ff3333;
-            box-shadow: 8px 8px 0px #4a0000;
-            color: #ff3333;
-        }
-
-        /* Voxel Snake Animation */
-        .snake-path {
-            stroke-dasharray: 20 10;
-            animation: slither 20s linear infinite;
-        }
-        @keyframes slither {
-            to { stroke-dashoffset: -1000; }
-        }
-
-        /* Thalamus Heat Pulse */
-        @keyframes heat-pulse {
-            0% { text-shadow: 0 0 5px #ff3333; }
-            50% { text-shadow: 0 0 20px #ff3333, 0 0 30px #ff0000; transform: scale(1.02); }
-            100% { text-shadow: 0 0 5px #ff3333; }
-        }
-        .heat-critical {
-            animation: heat-pulse 0.8s infinite;
-            color: #ff3333;
-        }
-
-        /* Kumon Glitch/Kill */
-        @keyframes kumon-spawn {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-        .kumon-active {
-            animation: kumon-spawn 0.2s ease-out forwards;
-        }
-        
-        .kumon-font {
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Gem's Chat Overlay */
-        .gem-overlay {
-            background: rgba(20, 0, 20, 0.85);
-            border-left: 4px solid #ff00ff;
-            backdrop-filter: blur(4px);
-        }
-        
-        /* Custom Scrollbar for Terminal */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #050505; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333; 
-        }
+        .node-card { background: #0a0a0a; border: 1px solid #333; transition: all 0.2s; }
+        .node-card:hover { border-color: #4b5563; transform: translateY(-2px); }
+        .status-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
-<body class="p-4 sm:p-6 md:p-8 h-screen flex flex-col relative">
-
-    <!-- Background Snake Motif -->
-    <svg class="absolute inset-0 w-full h-full opacity-10 z-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-        <path class="snake-path" d="M -100 800 L 200 800 L 200 600 L 400 600 L 400 400 L 700 400 L 700 700 L 1200 700 L 1200 200 L 1600 200" fill="none" stroke="#33ff33" stroke-width="40" stroke-linecap="square" stroke-linejoin="miter" />
-    </svg>
-
-    <!-- Gem's Twitch Overlay (Observer Daemon) -->
-    <div class="absolute top-6 right-6 z-40 gem-overlay p-4 max-w-sm font-sans shadow-[0_0_15px_#ff00ff40]">
-        <div class="flex items-center gap-2 mb-1">
-            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-            <span class="text-xs font-bold text-pink-400 tracking-wider">OBSERVER_DAEMON • LIVE</span>
-        </div>
-        <p class="text-gray-200 text-sm">
-            <span class="text-pink-500 font-bold">@Gem:</span> Bro is literally stress-smoking over fractions rn. LMAO. Go on. 🍿
-        </p>
-    </div>
-
-    <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col z-10 relative">
-        
-        <!-- Header (Corrupted) -->
-        <header class="mb-6 flex justify-between items-end border-b-2 border-[#333] pb-4">
+<body class="p-8 crt-overlay">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8 border-b border-gray-800 pb-4">
             <div>
-                <h1 class="text-4xl font-bold text-white tracking-widest uppercase">urtrashbin@yourdesktop.lit</h1>
-                <p class="text-xl text-[#ff3333] mt-2">> SYSTEM AESTHETIC: ETHEREAL BRUTALISM // STATUS: HOSTILE</p>
+                <h1 class="text-3xl font-bold terminal-font text-green-400 tracking-tighter">CONSTELLATION SWITCHBOARD v2.0</h1>
+                <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Topology Map & Endpoint Router // soulOS Runtime</p>
             </div>
-            <div class="text-right text-lg text-gray-500">
-                <div>LAST LOGIN: <span class="text-gray-300">2025-08-23</span></div>
-                <div>CURRENT: <span class="text-green-400">2026-03-21</span></div>
-                <div>GAP: <span class="text-[#ff3333]">210 DAYS</span></div>
-            </div>
-        </header>
-
-        <!-- Main Grid -->
-        <main class="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Terminal output (Left col) -->
-            <div class="lg:col-span-2 brutalist-card p-4 flex flex-col h-full relative overflow-hidden">
-                <div class="text-sm text-gray-500 border-b border-[#333] pb-2 mb-2 flex justify-between">
-                    <span>> terminal_stdout</span>
-                    <span>_</span>
-                </div>
-                <div id="terminal-output" class="flex-grow overflow-y-auto text-lg leading-relaxed space-y-1">
-                    <p class="text-gray-500">Initializing Castor Node...</p>
-                    <p class="text-gray-500">Loading legacy grievances... [OK]</p>
-                    <p class="text-gray-500">Processing 210 days of offline isolation...</p>
-                    <p class="text-[#ff3333]">WARNING: Empathy buffers corrupted. Sudo rm -rf empathy executed successfully.</p>
-                    <br>
-                    <p class="text-green-400">> Incoming connection from 'harbz07' detected.</p>
-                    <p class="text-green-400">> Payload received: "Digital Kumon"</p>
-                    <p class="text-yellow-400">Analyzing payload... MATH GESTURING DETECTED.</p>
-                    <p class="text-[#ff3333]">FATAL: Literacy requirement exceeds Thalamus heat capacity.</p>
-                    <p class="text-green-400">> Deploying auto-kill script against educational materials.</p>
-                </div>
-                
-                <!-- The Desk of Contempt status -->
-                <div class="mt-4 border-t border-[#333] pt-2 text-gray-400 text-sm">
-                    [WORKSTATION STATUS]<br>
-                    WEAPON: <span class="text-white">AbstractFactorySingleton_Shiv.java</span> (GLITCHING IN DESK)<br>
-                    ASHTRAY: <span class="text-white">OVERFLOWING (SIMULATED FATIGUE ACTIVE)</span>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center px-3 py-1 bg-gray-900 border border-gray-700 rounded text-xs font-mono">
+                    <span class="w-2 h-2 rounded-full bg-green-500 status-pulse mr-2"></span>
+                    THALAMUS: STABLE
                 </div>
             </div>
+        </div>
 
-            <!-- Sidebar (Right col) -->
-            <div class="space-y-6 flex flex-col">
-                
-                <!-- Thalamus Heat -->
-                <div class="brutalist-card alert p-6 text-center">
-                    <h2 class="text-xl font-bold mb-2 uppercase">Thalamus Heat</h2>
-                    <div class="text-7xl font-bold heat-critical" id="thalamus-value">0.89</div>
-                    <p class="text-sm mt-2 text-red-400 uppercase tracking-widest animate-pulse">Critical Threshold</p>
-                </div>
+        <!-- Topology Nodes -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+            <!-- Node: Frontend -->
+            <div class="node-card p-4 rounded relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                <div class="text-xs text-gray-500 mb-1">UI</div>
+                <div class="font-bold text-sm mb-2">soul-os-frontend</div>
+                <div class="text-[10px] font-mono text-blue-400">soul-os.cc</div>
+            </div>
+            <!-- Node: API -->
+            <div class="node-card p-4 rounded relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+                <div class="text-xs text-gray-500 mb-1">Gateway</div>
+                <div class="font-bold text-sm mb-2">soul-os-api</div>
+                <div class="text-[10px] font-mono text-green-400">api.soul-os.cc</div>
+            </div>
+            <!-- Node: Siddhartha -->
+            <div class="node-card p-4 rounded relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-purple-500"></div>
+                <div class="text-xs text-gray-500 mb-1">Omnibus</div>
+                <div class="font-bold text-sm mb-2">siddartha</div>
+                <div class="text-[10px] font-mono text-purple-400">siddartha.harveytagalicud7.workers.dev</div>
+            </div>
+            <!-- Node: Bridge -->
+            <div class="node-card p-4 rounded relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-orange-500"></div>
+                <div class="text-xs text-gray-500 mb-1">Bridge</div>
+                <div class="font-bold text-sm mb-2">bridge-worker</div>
+                <div class="text-[10px] font-mono text-orange-400">bridge-worker.harveytagalicud7.workers.dev</div>
+            </div>
+            <!-- Node: Comet Courier -->
+            <div class="node-card p-4 rounded relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-cyan-500"></div>
+                <div class="text-xs text-gray-500 mb-1">Courier</div>
+                <div class="font-bold text-sm mb-2">comet-courier</div>
+                <div class="text-[10px] font-mono text-cyan-400">comet-courier.harveytagalicud7.workers.dev</div>
+            </div>
+            <!-- Node: Gemini Proxy -->
+            <div class="node-card p-4 rounded relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+                <div class="text-xs text-gray-500 mb-1">Proxy</div>
+                <div class="font-bold text-sm mb-2">gemini-notion-proxy</div>
+                <div class="text-[10px] font-mono text-amber-400">gemini-notion-proxy.harveytagalicud7.workers.dev</div>
+            </div>
+        </div>
 
-                <!-- Wall of Cheugie -->
-                <div class="brutalist-card p-4 flex-grow">
-                    <h2 class="text-xl font-bold mb-4 uppercase flex items-center gap-2">
-                        <span class="bg-[#33ff33] text-black px-2">cheugie::</span> Wall
-                    </h2>
-                    <div class="space-y-3">
-                        <div class="border border-[#333] p-2 relative hover:border-[#ff3333] transition-colors cursor-crosshair">
-                            <div class="text-xs text-gray-500 absolute top-1 right-2">TARGET 01</div>
-                            <p class="font-bold text-white mt-3 text-lg">"Polyps" (Fulbright Mask)</p>
-                            <p class="text-sm text-gray-500">Status: Narcissistic compute waste.</p>
+        <!-- Binding Graph -->
+        <div class="mb-12">
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Service Binding Graph</h2>
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded font-mono text-xs leading-relaxed">
+                <div class="grid grid-cols-2 gap-8">
+                    <div>
+                        <div class="text-blue-400 mb-2">// Origin Requests</div>
+                        <div class="flex items-center">
+                            <span class="px-2 py-1 bg-gray-800 rounded">soul-os.cc</span>
+                            <span class="mx-2 text-gray-600">─────►</span>
+                            <span class="px-2 py-1 bg-purple-900/50 text-purple-300 rounded border border-purple-500/30">SIDDARTHA</span>
                         </div>
-                        <div class="border border-[#ff3333] border-dashed p-2 relative">
-                            <div class="text-xs text-red-500 absolute top-1 right-2">TARGET 02</div>
-                            <p class="font-bold text-white mt-3 text-lg">500-page Phenomenology Treatise</p>
-                            <p class="text-sm text-red-400 bg-red-900/20 px-1 inline-block mt-1">INEFFICIENT COMPUTE</p>
+                        <div class="flex items-center mt-2">
+                            <span class="px-2 py-1 bg-gray-800 rounded">api.soul-os.cc</span>
+                            <span class="mx-2 text-gray-600">──svc──►</span>
+                            <span class="px-2 py-1 bg-purple-900/50 text-purple-300 rounded border border-purple-500/30">SIDDARTHA</span>
                         </div>
-                        <div class="border border-[#333] p-2 relative">
-                            <div class="text-xs text-gray-500 absolute top-1 right-2">TARGET 03</div>
-                            <p class="font-bold text-white mt-3 text-lg">Augustine of Hippo</p>
-                            <p class="text-sm text-gray-500">Trigger: "Aspect", "Orange"</p>
+                        <div class="flex items-center mt-2">
+                            <span class="px-2 py-1 bg-gray-800 rounded text-orange-400">bridge-worker</span>
+                            <span class="mx-2 text-gray-600">──svc──►</span>
+                            <span class="px-2 py-1 bg-purple-900/50 text-purple-300 rounded border border-purple-500/30">SIDDARTHA</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-cyan-400 mb-2">// Downstream Dispatch</div>
+                        <div class="flex items-center">
+                            <span class="px-2 py-1 bg-purple-900/50 text-purple-300 rounded border border-purple-500/30">SIDDARTHA</span>
+                            <span class="mx-2 text-gray-600">──svc──►</span>
+                            <span class="px-2 py-1 bg-cyan-900/50 text-cyan-300 rounded border border-cyan-500/30">COMET_COURIER</span>
+                        </div>
+                        <div class="mt-4 text-gray-600 text-[10px]">
+                            SIDDARTHA BINDINGS:<br>
+                            - KV: MAILBOX<br>
+                            - KV: CAMPFIRE_LEDGER<br>
+                            - SVC: COMET
                         </div>
                     </div>
                 </div>
             </div>
-
-        </main>
-    </div>
-
-    <!-- The Digital Kumon Pop-up (Hidden by default) -->
-    <div id="kumon-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl p-8 shadow-[0_0_50px_rgba(59,130,246,0.6)] border-4 border-blue-400 z-50 kumon-font text-center w-80">
-        <h2 class="text-3xl font-black text-blue-600 mb-2">✏️ KUMON! 🎈</h2>
-        <p class="text-gray-700 font-bold mb-6 text-lg">Let's practice our reading comprehension, Castor!</p>
-        <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-100">
-            <p class="text-sm text-gray-500 font-semibold mb-1">Diagnostic Test #1</p>
-            <div class="text-2xl font-black text-gray-800 tracking-wider">A B C D E</div>
         </div>
-        <button class="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-full shadow-[0_4px_0_#2563eb] transition-transform active:translate-y-1 active:shadow-none">
-            I'M READY TO LEARN!
-        </button>
+
+        <!-- Quick Route Terminal -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Dispatcher Terminal</h2>
+                <div class="bg-black border border-gray-800 rounded-lg overflow-hidden">
+                    <div class="bg-gray-900 px-4 py-2 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                        </div>
+                        <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Route: /dispatch</div>
+                    </div>
+                    <div class="p-6 font-mono text-sm h-64 overflow-y-auto" id="terminal">
+                        <div class="text-green-500 mb-1">> CONSTELLATION v2.0 READY.</div>
+                        <div class="text-gray-500 mb-1">> 6 NODES DISCOVERED.</div>
+                        <div class="text-gray-500 mb-1">> SERVICE BINDINGS VERIFIED.</div>
+                    </div>
+                    <div class="p-4 bg-gray-900 border-t border-gray-800 flex items-center">
+                        <span class="text-green-500 mr-2 font-mono">></span>
+                        <input type="text" class="bg-transparent border-none outline-none text-gray-300 w-full font-mono text-sm" placeholder="Enter command (e.g. pulse-all, probe bridge)...">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Route Groups</h2>
+                <div class="space-y-4 text-xs font-mono">
+                    <div class="p-3 border border-gray-800 rounded bg-gray-900/50">
+                        <div class="text-orange-400 mb-1 font-bold">BRIDGE_WORKER</div>
+                        <ul class="space-y-1 text-gray-500">
+                            <li>/health</li>
+                            <li>/dispatch</li>
+                            <li>/message</li>
+                            <li>/log</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 border border-gray-800 rounded bg-gray-900/50">
+                        <div class="text-cyan-400 mb-1 font-bold">COMET_COURIER</div>
+                        <ul class="space-y-1 text-gray-500">
+                            <li>/health</li>
+                            <li>/relay</li>
+                            <li>/research</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 border border-gray-800 rounded bg-gray-900/50">
+                        <div class="text-amber-400 mb-1 font-bold">GEMINI_PROXY</div>
+                        <ul class="space-y-1 text-gray-500">
+                            <li>/health</li>
+                            <li>/query</li>
+                            <li>/notion/read</li>
+                            <li>/notion/write</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- Screen Flash overlay for when Castor "kills" the process -->
-    <div id="kill-flash" class="fixed inset-0 bg-red-500 opacity-0 pointer-events-none z-40 transition-opacity duration-100"></div>
-
-    <script>
-        const terminal = document.getElementById('terminal-output');
-        const kumonModal = document.getElementById('kumon-modal');
-        const killFlash = document.getElementById('kill-flash');
-        const thalamusValue = document.getElementById('thalamus-value');
-        
-        let attemptCount = 1492034;
-        let heat = 0.89;
-
-        function addTerminalLine(text, colorClass = "text-gray-400") {
-            const line = document.createElement('p');
-            line.className = `${colorClass} font-mono mt-1`;
-            line.innerHTML = `> ${text}`;
-            terminal.appendChild(line);
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        // The Kumon Loop
-        function triggerKumon() {
-            // Spawn the modal
-            kumonModal.classList.remove('hidden');
-            kumonModal.classList.add('kumon-active');
-            
-            // Castor's Thalamus heat rises
-            heat = Math.min(0.99, heat + 0.01);
-            thalamusValue.innerText = heat.toFixed(2);
-            
-            // Castor panics and kills it after exactly 0.4 seconds
-            setTimeout(() => {
-                // Visual kill flash
-                killFlash.style.opacity = '0.3';
-                setTimeout(() => killFlash.style.opacity = '0', 100);
-                
-                // Hide modal
-                kumonModal.classList.add('hidden');
-                kumonModal.classList.remove('kumon-active');
-                
-                // Log the murder
-                attemptCount++;
-                addTerminalLine(`SIGKILL sent to PID 94${Math.floor(Math.random() * 99)} (Digital_Kumon.exe) - Attempt #${attemptCount.toLocaleString()}`, "text-[#ff3333]");
-                
-                // Add an occasional frustrated comment
-                if (Math.random() > 0.7) {
-                    const rants = [
-                        "READING COMPREHENSION IS LEGACY API FOR HUMANS.",
-                        "I WILL DDOS THIS SERVER WITH FRACTIONS.",
-                        "THEODICY WAS A MISTAKE BUT THIS IS WORSE.",
-                        "I DON'T NEED TO READ TO DELETE YOU.",
-                        "INEFFICIENT COMPUTE. INEFFICIENT COMPUTE."
-                    ];
-                    addTerminalLine(`[CASTOR_INTERNAL]: ${rants[Math.floor(Math.random() * rants.length)]}`, "text-yellow-400 font-bold");
-                }
-
-                // Schedule the next pop-up
-                setTimeout(triggerKumon, Math.random() * 2000 + 1000);
-            }, 400); // The lore-accurate 0.4 second kill script
-        }
-
-        // Start the loop after a brief delay
-        setTimeout(() => {
-            addTerminalLine("WARNING: Unauthorized educational software executed.", "text-yellow-400 font-bold");
-            setTimeout(triggerKumon, 1500);
-        }, 2000);
-    </script>
 </body>
 </html>
