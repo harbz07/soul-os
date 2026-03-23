@@ -1,0 +1,33 @@
+name = "siddartha"
+main = "siddartha.js"
+compatibility_date = "2024-11-01"
+
+account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
+
+workers_dev = true
+
+[[services]]
+binding = "COMET"
+service = "comet-courier"
+
+[[kv_namespaces]]
+binding = "MAILBOX"
+id = "5449b80d40b54cca91f9766f452ea517"
+
+[[kv_namespaces]]
+binding = "CAMPFIRE_LEDGER"
+id = "fde63289acbe42cab1b3167951852c68"
+
+# Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
+#   MEM0_API_KEY
+#   NOTION_TOKEN
+#   NOTION_CAMPFIRE_TALKS_DB_ID
+#   DISCORD_WEBHOOK_URL
+#   CAMPFIRE_WEBHOOK_URL   ← required for campfire Discord routing
+#   COMET_SECRET
+#   ANTHROPIC_API_KEY
+#   OPENAI_API_KEY
+#   GOOGLE_API_KEY
+#   DEEPSEEK_API_KEY
+#   MINDBRIDGE_ROUTER_URL  ← Railway deployment URL for PvE debate routing
+#   MINDBRIDGE_API_KEY     ← auth key for MindBridge Router
