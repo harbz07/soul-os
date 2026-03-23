@@ -29,3 +29,5 @@ id = "fde63289acbe42cab1b3167951852c68"
 #   OPENAI_API_KEY
 #   GOOGLE_API_KEY
 #   DEEPSEEK_API_KEY
+#   MINDBRIDGE_ROUTER_URL  ← Railway deployment URL for PvE debate routing
+#   MINDBRIDGE_API_KEY     ← auth key for MindBridge Router
