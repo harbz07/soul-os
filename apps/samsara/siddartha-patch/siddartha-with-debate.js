@@ -1,21 +1,10 @@
-// siddartha.js — Full Constellation Omnibus Router v4
-// v4 additions:
-// - D1 persistence: sessions, traces, conversation_threads, agent graph edges
-// - Graph routes: POST /thread, GET /thread/:id, GET /thread/:id/graph,
-//   GET /threads, GET /graph/:agent, GET /sessions, GET /session/:id, GET /agents/state
-// - D1 write-back on /api/route, /converse, /message, /chain, /reply
-// - All D1 ops degrade silently when DB binding is absent
-// - Samsara (PvE debate engine) lives in apps/samsara — not patched here
-// - Bindings needed: COMET (service), MAILBOX (KV), CAMPFIRE_LEDGER (KV), DB (D1)
-
-import {
-  sessionOpen, sessionClose, sessionIncrementTurns, sessionGet, sessionList,
-  traceWrite, traceList,
-  threadOpen, threadAddParticipant, threadTick, threadGet, threadList,
-  edgeRecord, graphGet, agentGraph,
-  agentStateGet, agentStateTouch,
-  recordExchange
-} from "./d1.js";
+// siddartha.js — Full Constellation Omnibus Router v3 (SNAPSHOT)
+// Snapshot notes (per Comet review + Campfire integration):
+// - FIXED: Comet /api/route Authorization header now uses env.COMET_SECRET (and guards if missing)
+// - FIXED: dispatchToDiscord supports optional webhook_url override (used by /converse to route to CAMPFIRE_WEBHOOK_URL)
+// - FIXED: /converse rejects "comet" up-front (no mid-run failure); you can change this if you wire a comet caller
+// - ADDED: Campfire helpers (sha256Hex, buildCampfireEnvelope, receipts, Notion upsert + KV idempotency) included in-file
+// - NOTE: Ensure wrangler.toml bindings exist for services.COMET and kv_namespaces.CAMPFIRE_LEDGER
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -524,16 +513,13 @@ var siddartha_hydrated_default = {
     if (method === "OPTIONS")
       return new Response(null, { headers: CORS_HEADERS });
 
-    // ── D1 shorthand ──
-    const DB = env.DB ?? null;
-
     // — Manifest (GET /)
     if (method === "GET" && pathname === "/") {
       return jsonResponse({
         vessel: "Siddhartha",
         role: "Central Constellation Omnibus Router",
         status: "operational",
-        version: "v4.0.0-graph",
+        version: "v3.0.0-mailbox",
         agents: Object.fromEntries(Object.entries(AGENTS).map(([k, v]) => [k, v.epithet])),
         routes: {
           "GET  /health":            "Pulse check",
@@ -549,17 +535,9 @@ var siddartha_hydrated_default = {
           "POST /parietal":          "Semantic gravity — surface dormant waypoints",
           "POST /log":               "Atlas session log → Notion + Discord",
           "POST /converse":          "Campfire multi-agent roundtable + Notion upsert",
-          "POST /thread":            "Open or retrieve a conversation thread (D1)",
-          "GET  /thread/:id":        "Get thread metadata + recent traces (D1)",
-          "GET  /thread/:id/graph":  "Conversation graph for a thread (D1)",
-          "GET  /threads":           "List conversation threads (D1)",
-          "GET  /graph/:agent":      "Agent's full conversation graph across threads (D1)",
-          "GET  /sessions":          "List recent sessions (D1)",
-          "GET  /session/:id":       "Get a session + its traces (D1)",
-          "GET  /agents/state":      "All agent state snapshots (D1)"
+          "POST /debate":            "PvE debate engine → MindBridge Router (structured_test | prosecution | stress_test)"
         },
         mailbox: env.MAILBOX ? "KV-backed (persistent)" : "in-memory (ephemeral)",
-        d1: env.DB ? "bound" : "missing",
         atlas: "https://www.notion.so/2f798e9c907e80288b9fe2f7380fcbe2"
       });
     }
@@ -576,7 +554,7 @@ var siddartha_hydrated_default = {
       return jsonResponse({
         ok: true,
         service: "siddhartha",
-        version: "v4.0.0-graph",
+        version: "v3.0.0-mailbox",
         ts: new Date().toISOString(),
         subsystems: {
           mailbox_kv: kvOk ? "bound" : "missing",
@@ -587,8 +565,7 @@ var siddartha_hydrated_default = {
           campfire_notion_db: campfireNotionOk ? "configured" : "missing",
           campfire_discord_webhook: campfireDiscordOk ? "configured" : "missing",
           comet_service_binding: env.COMET ? "bound" : "missing",
-          comet_secret: env.COMET_SECRET ? "configured" : "missing",
-          d1_db: env.DB ? "bound" : "missing"
+          comet_secret: env.COMET_SECRET ? "configured" : "missing"
         }
       });
     }
@@ -702,17 +679,6 @@ var siddartha_hydrated_default = {
               threadId: null,
               ts
             }));
-            ctx.waitUntil(recordExchange(DB, {
-              threadId: body.thread_id ?? null,
-              fromAgent: "harvey",
-              toAgent: agentName,
-              epithet: agentConfig.epithet,
-              request: requestText,
-              response: String(agentResponse),
-              model: agentConfig.model,
-              triggerType: "T1",
-              source: "api"
-            }));
 
             return jsonResponse({ status: "success", agent: agentName, epithet: agentConfig.epithet, intent, response: agentResponse });
           }
@@ -742,17 +708,6 @@ var siddartha_hydrated_default = {
             response: String(agentResponse),
             threadId: null,
             ts
-          }));
-          ctx.waitUntil(recordExchange(DB, {
-            threadId: body.thread_id ?? null,
-            fromAgent: "harvey",
-            toAgent: agentName,
-            epithet: agentConfig.epithet,
-            request: requestText,
-            response: String(agentResponse),
-            model: agentConfig.model,
-            triggerType: "T1",
-            source: "api"
           }));
 
           return jsonResponse({ status: "success", agent: agentName, epithet: agentConfig.epithet, intent, response: agentResponse });
@@ -811,26 +766,6 @@ var siddartha_hydrated_default = {
         })
       ]);
 
-      // D1: record inter-agent edge
-      ctx.waitUntil((async () => {
-        if (thread_tag) {
-          const tId = await threadOpen(DB, {
-            id: thread_tag, name: `Message thread • ${from} → ${to}`,
-            participants: [from, to], source: "message"
-          });
-          const trId = await traceWrite(DB, {
-            threadId: tId, agent: to, role: "user",
-            triggerType: "T2", request: msgBody
-          });
-          await edgeRecord(DB, {
-            threadId: tId, traceId: trId,
-            fromAgent: from, toAgent: to,
-            intent: intent ?? "message", trigger: "T2"
-          });
-          await threadTick(DB, tId, { turns: 1 });
-        }
-      })());
-
       return jsonResponse({
         ok: true,
         msg_id: msgId,
@@ -878,24 +813,6 @@ var siddartha_hydrated_default = {
         ts
       }));
 
-      // D1: record reply edge in thread
-      ctx.waitUntil((async () => {
-        const tId = thread_tag || original.thread_tag;
-        if (tId) {
-          const trId = await traceWrite(DB, {
-            threadId: tId, agent, role: "assistant",
-            triggerType: "T2", request: original.body,
-            response
-          });
-          await edgeRecord(DB, {
-            threadId: tId, traceId: trId,
-            fromAgent: agent, toAgent: original.from,
-            intent: "reply", trigger: "T2"
-          });
-          await threadTick(DB, tId, { turns: 1 });
-        }
-      })());
-
       return jsonResponse({
         ok: true,
         reply_id: replyId,
@@ -939,25 +856,6 @@ var siddartha_hydrated_default = {
         payload: `🔗 **Chain Invoked**\n${origin} → ${chain.join(" → ")}\n🧵 \`${threadId}\`\n🎯 Goal: ${goal}`,
         ts
       }));
-
-      // D1: open thread and record chain edges
-      ctx.waitUntil((async () => {
-        const tId = await threadOpen(DB, {
-          id: threadId,
-          name: `Chain • ${origin} → ${chain.join(" → ")}`,
-          goal, participants: [origin, ...chain], source: "chain"
-        });
-        for (let i = 0; i < chain.length; i++) {
-          const fa = i === 0 ? origin : chain[i - 1];
-          const ta = chain[i];
-          await edgeRecord(DB, {
-            threadId: tId, fromAgent: fa, toAgent: ta,
-            intent: "chain", trigger: "T3"
-          });
-        }
-        await threadTick(DB, tId, { turns: chain.length, sessions: 1 });
-      })());
-
       return jsonResponse({ ok: true, thread_id: threadId, chain, steps, ts });
     }
 
@@ -1426,59 +1324,6 @@ var siddartha_hydrated_default = {
         }));
       }
 
-      // ── D1 write-back for /converse ──────────────────────────
-      ctx.waitUntil((async () => {
-        const tId = await threadOpen(DB, {
-          id: threadId,
-          name: `Campfire • ${agents.join(" ↔ ")} • ${seed.slice(0, 60)}`,
-          goal: seed,
-          participants: agents,
-          source: "campfire",
-          initiatedBy: initiated_by
-        });
-        const sId = await sessionOpen(DB, {
-          threadId: tId, source: "campfire", seed, mode, agent: agents[0]
-        });
-        let tNum = 0;
-        for (const turn of transcript) {
-          if (!turn || !turn.agent) continue;
-          tNum++;
-          const trId = await traceWrite(DB, {
-            sessionId: sId, threadId: tId,
-            agent: turn.agent, epithet: turn.epithet,
-            role: "assistant", triggerType: "T2",
-            request: seed, response: turn.response,
-            roundNumber: turn.round, turnNumber: tNum,
-            partyNodes: turn.party_nodes,
-            model: AGENTS[turn.agent]?.model
-          });
-          // harvey → each agent edge
-          await edgeRecord(DB, {
-            threadId: tId, sessionId: sId, traceId: trId,
-            fromAgent: "harvey", toAgent: turn.agent,
-            intent: "campfire", trigger: "T2"
-          });
-        }
-        // inter-agent edges within each round
-        const byRound = {};
-        for (const turn of transcript) {
-          if (!turn || !turn.agent) continue;
-          if (!byRound[turn.round]) byRound[turn.round] = [];
-          byRound[turn.round].push(turn.agent);
-        }
-        for (const roundAgents of Object.values(byRound)) {
-          for (let i = 0; i < roundAgents.length - 1; i++) {
-            await edgeRecord(DB, {
-              threadId: tId,
-              fromAgent: roundAgents[i], toAgent: roundAgents[i + 1],
-              intent: "roundtable", trigger: "T2"
-            });
-          }
-        }
-        await sessionClose(DB, sId, { turnCount: tNum });
-        await threadTick(DB, tId, { turns: tNum, sessions: 1 });
-      })());
-
       return jsonResponse({
         ok: true,
         thread_id: threadId,
@@ -1498,88 +1343,84 @@ var siddartha_hydrated_default = {
       });
     }
 
-    // ══ Conversation Graph Routes (D1) ══════════════════════════════════════
+    // ── PvE Debate Engine (POST /debate) ─────────────────────
+    // Routes to MindBridge Router's /v1/debate endpoint for structured
+    // philosophical debates with cast personas, reasoning chains, and scoring.
+    if (method === "POST" && pathname === "/debate") {
+      const ROUTER_URL = env.MINDBRIDGE_ROUTER_URL;
+      const ROUTER_KEY = env.MINDBRIDGE_API_KEY;
+      if (!ROUTER_URL || !ROUTER_KEY)
+        return errorResponse(500, "MINDBRIDGE_ROUTER_URL or MINDBRIDGE_API_KEY not configured. Set via wrangler secret.");
 
-    // — Open / retrieve a thread (POST /thread)
-    if (method === "POST" && pathname === "/thread") {
       let body;
-      try { body = await request.json(); } catch { return errorResponse(400, "Invalid JSON body"); }
-      const { id, name, goal, participants, source: tSrc, meta } = body;
-      if (!name && !id) return errorResponse(400, "Missing: name or id");
-      if (!DB) return errorResponse(503, "D1 not bound — set DB binding in wrangler.toml");
-      const tId = await threadOpen(DB, { id, name, goal, participants, source: tSrc, meta });
-      if (!tId) return errorResponse(500, "Thread open failed");
-      const thread = await threadGet(DB, tId);
-      return jsonResponse({ ok: true, thread });
-    }
+      try { body = await request.json(); }
+      catch { return errorResponse(400, "Invalid JSON body"); }
 
-    // — Get thread + recent traces + graph (GET /thread/:id)
-    if (method === "GET" && pathname.match(/^\/thread\/[^/]+$/) && !pathname.endsWith("/graph")) {
-      const tId = pathname.replace("/thread/", "").split("/")[0];
-      if (!DB) return errorResponse(503, "D1 not bound");
-      const thread = await threadGet(DB, tId);
-      if (!thread) return errorResponse(404, `Thread not found: ${tId}`);
-      const traces = await traceList(DB, { threadId: tId, limit: 100 });
-      const graph = await graphGet(DB, tId);
-      return jsonResponse({ ok: true, thread, traces, graph });
-    }
+      if (!body.seed) return errorResponse(400, "seed is required — the opening claim to debate");
 
-    // — Get conversation graph for a thread (GET /thread/:id/graph)
-    if (method === "GET" && pathname.match(/^\/thread\/[^/]+\/graph$/)) {
-      const tId = pathname.replace("/thread/", "").replace("/graph", "");
-      if (!DB) return errorResponse(503, "D1 not bound");
-      const graph = await graphGet(DB, tId);
-      return jsonResponse({ ok: true, thread_id: tId, ...graph });
-    }
+      try {
+        const resp = await fetch(`${ROUTER_URL}/v1/debate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${ROUTER_KEY}`,
+          },
+          body: JSON.stringify(body),
+        });
 
-    // — List threads (GET /threads)
-    if (method === "GET" && pathname === "/threads") {
-      if (!DB) return errorResponse(503, "D1 not bound");
-      const params = new URL(request.url).searchParams;
-      const threads = await threadList(DB, {
-        status: params.get("status") ?? undefined,
-        limit: parseInt(params.get("limit") ?? "20", 10)
-      });
-      return jsonResponse({ ok: true, count: threads.length, threads });
-    }
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
+          return errorResponse(resp.status, `MindBridge debate error: ${JSON.stringify(errData)}`);
+        }
 
-    // — Agent conversation graph (GET /graph/:agent)
-    if (method === "GET" && pathname.startsWith("/graph/")) {
-      const agentKey = pathname.replace("/graph/", "").trim();
-      if (!agentKey) return errorResponse(400, "Missing agent key");
-      if (!DB) return errorResponse(503, "D1 not bound");
-      const graph = await agentGraph(DB, agentKey);
-      const state = await agentStateGet(DB, agentKey);
-      return jsonResponse({ ok: true, agent: agentKey, state, ...graph });
-    }
+        const data = await resp.json();
+        const ts = new Date().toISOString();
 
-    // — List recent sessions (GET /sessions)
-    if (method === "GET" && pathname === "/sessions") {
-      if (!DB) return errorResponse(503, "D1 not bound");
-      const params = new URL(request.url).searchParams;
-      const sessions = await sessionList(DB, {
-        agent: params.get("agent") ?? undefined,
-        threadId: params.get("thread_id") ?? undefined,
-        limit: parseInt(params.get("limit") ?? "20", 10)
-      });
-      return jsonResponse({ ok: true, count: sessions.length, sessions });
-    }
+        // Log to Discord
+        if (data.turns && data.turns.length) {
+          const formatted = data.turns.map(t =>
+            `**[${String(t.speaker).toUpperCase()} — ${t.role}]**\n${String(t.argument).slice(0, 400)}`
+          ).join("\n\n---\n\n");
+          ctx.waitUntil(dispatchToDiscord(env, {
+            source: `pve-debate:${data.debate_id || "unknown"}`,
+            trigger: "T3",
+            agentId: "constellation",
+            payload: `🎭 **PvE Debate Complete**\n**Paper:** ${body.paper_title || "untitled"}\n**Mode:** ${body.mode || "prosecution"}\n**Turns:** ${data.turns.length}\n---\n${formatted.slice(0, 1600)}`,
+            ts
+          }));
+        }
 
-    // — Get a session + its traces (GET /session/:id)
-    if (method === "GET" && pathname.startsWith("/session/")) {
-      const sId = pathname.replace("/session/", "").trim();
-      if (!DB) return errorResponse(503, "D1 not bound");
-      const session = await sessionGet(DB, sId);
-      if (!session) return errorResponse(404, `Session not found: ${sId}`);
-      const traces = await traceList(DB, { sessionId: sId, limit: 200 });
-      return jsonResponse({ ok: true, session, traces });
-    }
+        // Log structured test scores if present
+        if (data.test_scores && data.test_scores.length) {
+          const scoresSummary = data.test_scores
+            .filter(s => s.assessment)
+            .map(s => `${s.speaker} Q${s.question_number}: ${s.assessment}`)
+            .join(" | ");
+          ctx.waitUntil(dispatchToDiscord(env, {
+            source: `pve-test:${data.debate_id || "unknown"}`,
+            trigger: "T3",
+            agentId: "constellation",
+            payload: `📊 **PvE Structured Test Scores**\n${scoresSummary.slice(0, 1800)}`,
+            ts
+          }));
+        }
 
-    // — All agent state (GET /agents/state)
-    if (method === "GET" && pathname === "/agents/state") {
-      if (!DB) return errorResponse(503, "D1 not bound");
-      const states = await agentStateGet(DB);
-      return jsonResponse({ ok: true, agents: states });
+        // Hearth write-back
+        if (data.strongest_objection) {
+          ctx.waitUntil(writeBackToHearth(env, {
+            agentName: "constellation",
+            epithet: "PvE Debate Engine",
+            request: body.seed,
+            response: `Strongest objection: ${data.strongest_objection}. Productive tension: ${data.productive_tension || "pending"}.`,
+            threadId: data.debate_id,
+            ts
+          }));
+        }
+
+        return jsonResponse(data);
+      } catch (e) {
+        return errorResponse(502, `MindBridge debate call failed: ${e.message}`);
+      }
     }
 
     return errorResponse(404, `Route not found: ${method} ${pathname}. GET / for manifest.`);

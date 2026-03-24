@@ -18,11 +18,6 @@ id = "5449b80d40b54cca91f9766f452ea517"
 binding = "CAMPFIRE_LEDGER"
 id = "fde63289acbe42cab1b3167951852c68"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "soul-os-cognitive-db"
-database_id = "d7ec816c-693d-4e6b-99ff-ead94fb44f16"
-
 # Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
 #   MEM0_API_KEY
 #   NOTION_TOKEN
@@ -34,3 +29,5 @@ database_id = "d7ec816c-693d-4e6b-99ff-ead94fb44f16"
 #   OPENAI_API_KEY
 #   GOOGLE_API_KEY
 #   DEEPSEEK_API_KEY
+#   MINDBRIDGE_ROUTER_URL  ← Railway deployment URL for PvE debate routing
+#   MINDBRIDGE_API_KEY     ← auth key for MindBridge Router
