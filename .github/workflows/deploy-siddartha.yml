@@ -29,3 +29,13 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: wrangler deploy --config apps/siddartha/wrangler.toml
+
+      - name: Push MINDBRIDGE_ROUTER_URL secret
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: echo "${{ secrets.MINDBRIDGE_ROUTER_URL }}" | wrangler secret put MINDBRIDGE_ROUTER_URL --config apps/siddartha/wrangler.toml
+
+      - name: Push MINDBRIDGE_API_KEY secret
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: echo "${{ secrets.MINDBRIDGE_API_KEY }}" | wrangler secret put MINDBRIDGE_API_KEY --config apps/siddartha/wrangler.toml

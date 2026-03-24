@@ -34,3 +34,5 @@ database_id = "d7ec816c-693d-4e6b-99ff-ead94fb44f16"
 #   OPENAI_API_KEY
 #   GOOGLE_API_KEY
 #   DEEPSEEK_API_KEY
+#   MINDBRIDGE_ROUTER_URL  ← Railway deployment URL for PvE debate routing
+#   MINDBRIDGE_API_KEY     ← auth key for MindBridge Router
