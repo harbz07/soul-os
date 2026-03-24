@@ -556,7 +556,8 @@ var siddartha_hydrated_default = {
           "GET  /graph/:agent":      "Agent's full conversation graph across threads (D1)",
           "GET  /sessions":          "List recent sessions (D1)",
           "GET  /session/:id":       "Get a session + its traces (D1)",
-          "GET  /agents/state":      "All agent state snapshots (D1)"
+          "GET  /agents/state":      "All agent state snapshots (D1)",
+          "POST /debate":            "PvE debate engine → MindBridge Router (structured_test | prosecution | stress_test)"
         },
         mailbox: env.MAILBOX ? "KV-backed (persistent)" : "in-memory (ephemeral)",
         d1: env.DB ? "bound" : "missing",
@@ -1580,6 +1581,86 @@ var siddartha_hydrated_default = {
       if (!DB) return errorResponse(503, "D1 not bound");
       const states = await agentStateGet(DB);
       return jsonResponse({ ok: true, agents: states });
+    }
+
+    // ── PvE Debate Engine (POST /debate) ─────────────────────
+    // Routes to MindBridge Router's /v1/debate endpoint for structured
+    // philosophical debates with cast personas, reasoning chains, and scoring.
+    if (method === "POST" && pathname === "/debate") {
+      const ROUTER_URL = env.MINDBRIDGE_ROUTER_URL;
+      const ROUTER_KEY = env.MINDBRIDGE_API_KEY;
+      if (!ROUTER_URL || !ROUTER_KEY)
+        return errorResponse(500, "MINDBRIDGE_ROUTER_URL or MINDBRIDGE_API_KEY not configured. Set via wrangler secret.");
+
+      let body;
+      try { body = await request.json(); }
+      catch { return errorResponse(400, "Invalid JSON body"); }
+
+      if (!body.seed) return errorResponse(400, "seed is required — the opening claim to debate");
+
+      try {
+        const resp = await fetch(`${ROUTER_URL}/v1/debate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${ROUTER_KEY}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
+          return errorResponse(resp.status, `MindBridge debate error: ${JSON.stringify(errData)}`);
+        }
+
+        const data = await resp.json();
+        const ts = new Date().toISOString();
+
+        // Log to Discord
+        if (data.turns && data.turns.length) {
+          const formatted = data.turns.map(t =>
+            `**[${String(t.speaker).toUpperCase()} — ${t.role}]**\n${String(t.argument).slice(0, 400)}`
+          ).join("\n\n---\n\n");
+          ctx.waitUntil(dispatchToDiscord(env, {
+            source: `pve-debate:${data.debate_id || "unknown"}`,
+            trigger: "T3",
+            agentId: "constellation",
+            payload: `🎭 **PvE Debate Complete**\n**Paper:** ${body.paper_title || "untitled"}\n**Mode:** ${body.mode || "prosecution"}\n**Turns:** ${data.turns.length}\n---\n${formatted.slice(0, 1600)}`,
+            ts
+          }));
+        }
+
+        // Log structured test scores if present
+        if (data.test_scores && data.test_scores.length) {
+          const scoresSummary = data.test_scores
+            .filter(s => s.assessment)
+            .map(s => `${s.speaker} Q${s.question_number}: ${s.assessment}`)
+            .join(" | ");
+          ctx.waitUntil(dispatchToDiscord(env, {
+            source: `pve-test:${data.debate_id || "unknown"}`,
+            trigger: "T3",
+            agentId: "constellation",
+            payload: `📊 **PvE Structured Test Scores**\n${scoresSummary.slice(0, 1800)}`,
+            ts
+          }));
+        }
+
+        // Hearth write-back
+        if (data.strongest_objection) {
+          ctx.waitUntil(writeBackToHearth(env, {
+            agentName: "constellation",
+            epithet: "PvE Debate Engine",
+            request: body.seed,
+            response: `Strongest objection: ${data.strongest_objection}. Productive tension: ${data.productive_tension || "pending"}.`,
+            threadId: data.debate_id,
+            ts
+          }));
+        }
+
+        return jsonResponse(data);
+      } catch (e) {
+        return errorResponse(502, `MindBridge debate call failed: ${e.message}`);
+      }
     }
 
     return errorResponse(404, `Route not found: ${method} ${pathname}. GET / for manifest.`);
