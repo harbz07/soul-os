@@ -6,6 +6,10 @@ account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
 
 workers_dev = true
 
+[[routes]]
+pattern = "siddartha.soul-os.cc/*"
+zone_name = "soul-os.cc"
+
 [[services]]
 binding = "COMET"
 service = "comet-courier"
