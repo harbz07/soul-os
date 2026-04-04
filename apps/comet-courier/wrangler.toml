@@ -6,6 +6,10 @@ account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
 
 workers_dev = true
 
+[[routes]]
+pattern = "hq.basecampgrounds.com/*"
+zone_name = "basecampgrounds.com"
+
 # Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
 #   COMET_SECRET
 #   PERPLEXITY_API_KEY
