@@ -16,7 +16,7 @@ Instead, use one of these private channels:
 
 When reporting, include:
 
-- A clear description of the issue and affected component(s) (for example: `apps/siddartha`, `apps/soul-os-api`, `apps/bridge-worker`).
+- A clear description of the issue and affected component(s) (for example: `apps/siddhartha`, `apps/soul-os-api`, `apps/bridge-worker`).
 - Reproduction steps or proof-of-concept details.
 - Potential impact and any suggested mitigation.
 
