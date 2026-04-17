@@ -1614,6 +1614,34 @@ var siddartha_hydrated_default = {
         }
 
         const data = await resp.json();
+        const debateId = data.debate_id || crypto.randomUUID();
+        // ── Persist full transcript to D1 ──
+        ctx.waitUntil((async () => {
+          if (!DB) return;
+          try {
+            await DB.prepare(`
+              INSERT INTO debate_transcripts 
+                (id, paper_title, thesis, mode, seed, rounds, turns_count, 
+                 strongest_objection, productive_tension, transcript_json, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+              debateId,
+              body.paper_title || null,
+              body.thesis || null,
+              body.mode || 'prosecution',
+              body.seed ? body.seed.slice(0, 2000) : null,
+              body.rounds || null,
+              data.turns ? data.turns.length : (data.test_scores ? data.test_scores.length : 0),
+              data.strongest_objection ? String(data.strongest_objection).slice(0, 4000) : null,
+              data.productive_tension ? String(data.productive_tension).slice(0, 4000) : null,
+              JSON.stringify(data).slice(0, 500000),
+              new Date().toISOString()
+            ).run();
+            console.log("[d1] debate transcript saved:", debateId);
+          } catch (e) {
+            console.error("[d1] debate transcript save failed:", e.message);
+          }
+        })());
         const ts = new Date().toISOString();
 
         // Log to Discord
@@ -1663,6 +1691,39 @@ var siddartha_hydrated_default = {
       }
     }
 
+
+    // ── Debate Transcript Retrieval ──
+    if (method === "GET" && pathname === "/debates") {
+      if (!DB) return errorResponse(503, "D1 not bound");
+      const params = new URL(request.url).searchParams;
+      const limit = parseInt(params.get("limit") ?? "20", 10);
+      try {
+        const result = await DB.prepare(
+          `SELECT id, paper_title, mode, turns_count, strongest_objection, created_at 
+           FROM debate_transcripts ORDER BY created_at DESC LIMIT ?`
+        ).bind(limit).all();
+        return jsonResponse({ ok: true, count: result.results.length, debates: result.results });
+      } catch (e) {
+        return errorResponse(500, e.message);
+      }
+    }
+    if (method === "GET" && pathname.match(/^\/debate\/[^/]+$/) && !pathname.startsWith("/debates")) {
+      const debateRetrieveId = pathname.replace("/debate/", "").trim();
+      if (!DB) return errorResponse(503, "D1 not bound");
+      try {
+        const row = await DB.prepare(
+          `SELECT * FROM debate_transcripts WHERE id = ?`
+        ).bind(debateRetrieveId).first();
+        if (!row) return errorResponse(404, `Debate not found: ${debateRetrieveId}`);
+        return jsonResponse({ 
+          ok: true, 
+          ...row, 
+          transcript: JSON.parse(row.transcript_json || "{}") 
+        });
+      } catch (e) {
+        return errorResponse(500, e.message);
+      }
+    }
     return errorResponse(404, `Route not found: ${method} ${pathname}. GET / for manifest.`);
   }
 };
