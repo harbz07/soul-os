@@ -5,7 +5,7 @@ from typing import Callable
 
 from agents import Agent, Runner, SQLiteSession
 
-from .memory_layer import MemoryStore, augment_input_with_memory, kinds_for_entity, seed_foundry_keep
+from .memory_layer import MemoryDoc, MemoryStore, augment_input_with_memory, kinds_for_entity, seed_foundry_keep
 
 
 def initialize_memory_store(base_dir: Path) -> MemoryStore:
@@ -18,7 +18,7 @@ def initialize_memory_store(base_dir: Path) -> MemoryStore:
     return store
 
 
-def retrieve_memories_for_agent(store: MemoryStore, agent_name: str, user_input: str):
+def retrieve_memories_for_agent(store: MemoryStore, agent_name: str, user_input: str) -> list[MemoryDoc]:
     return store.search(
         user_input,
         entity=agent_name,

@@ -1,6 +1,6 @@
 # ChatGPT agent component
 
-This directory is the first Constellation member component under `agents/`.
+This directory contains the first Constellation member component under `agents/`.
 
 Included pieces:
 - `memory_layer.py` — local memory document model, storage, retrieval scoring, and prompt augmentation.
