@@ -6,10 +6,6 @@ account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
 
 workers_dev = true
 
-[[routes]]
-pattern = "siddartha.soul-os.cc/*"
-zone_name = "soul-os.cc"
-
 [[services]]
 binding = "COMET"
 service = "comet-courier"
@@ -32,11 +28,11 @@ database_id = "d7ec816c-693d-4e6b-99ff-ead94fb44f16"
 #   NOTION_TOKEN
 #   NOTION_CAMPFIRE_TALKS_DB_ID
 #   DISCORD_WEBHOOK_URL
-#   CAMPFIRE_WEBHOOK_URL   ← required for campfire Discord routing
+#   CAMPFIRE_WEBHOOK_URL   <- required for campfire Discord routing
 #   COMET_SECRET
 #   ANTHROPIC_API_KEY
 #   OPENAI_API_KEY
 #   GOOGLE_API_KEY
 #   DEEPSEEK_API_KEY
-#   MINDBRIDGE_ROUTER_URL  ← Railway deployment URL for PvE debate routing
-#   MINDBRIDGE_API_KEY     ← auth key for MindBridge Router
+#   MINDBRIDGE_ROUTER_URL  <- Railway deployment URL for PvE debate routing
+#   MINDBRIDGE_API_KEY     <- auth key for MindBridge Router
