@@ -1,10 +1,43 @@
 from __future__ import annotations
 
+import importlib.util
+import sys
 from pathlib import Path
+from types import ModuleType
 from typing import Callable
 
-from agents import Agent, Runner, SQLiteSession
 
+def _load_external_agents_module() -> ModuleType:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for entry in sys.path:
+        search_root = Path(entry or ".").resolve()
+        if search_root == repo_root:
+            continue
+
+        package_init = search_root / "agents" / "__init__.py"
+        module_file = search_root / "agents.py"
+        candidate = package_init if package_init.is_file() else module_file if module_file.is_file() else None
+        if candidate is None:
+            continue
+
+        spec = importlib.util.spec_from_file_location("_external_agents", candidate)
+        if spec is None or spec.loader is None:
+            continue
+
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    raise ImportError(
+        "Could not import the external 'agents' dependency without resolving to the local repository package."
+    )
+
+
+_external_agents = _load_external_agents_module()
+Agent = _external_agents.Agent
+Runner = _external_agents.Runner
+SQLiteSession = _external_agents.SQLiteSession
 from .memory_layer import MemoryDoc, MemoryStore, augment_input_with_memory, kinds_for_entity, seed_foundry_keep
 
 
