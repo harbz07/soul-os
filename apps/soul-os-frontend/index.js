@@ -1362,7 +1362,7 @@ async function Ht(e, t) {
 }
 __name(Ht, "Ht");
 var br = /^[\w!#$%&'*.^`|~+-]+$/;
-var wr = /^[ !#-:<-[\]-~]*$/;
+var wr = /^[ !#-:<>-\[\]-~]*$/;
 var kr = /* @__PURE__ */ __name((e, t) => {
   const n = e.trim().split(";"), s = {};
   for (let o of n) {
