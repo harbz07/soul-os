@@ -27,6 +27,10 @@ coverage/
 .env.*
 !.env.example
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # IDE & OS noise
 .vscode/
 .idea/
