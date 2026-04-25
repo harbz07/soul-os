@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "canonical_by_runtime_key": {
+    "claude": "claude",
+    "triptych": "triptych",
+    "gemini": "triptych",
+    "comet": "comet",
+    "perplexity": "comet",
+    "nova": "nova",
+    "chatgpt": "nova",
+    "orion": "orion",
+    "rostam": "rostam"
+  },
+  "legacy_aliases": {
+    "foundry_keep": "orion",
+    "gnostic_architect": "claude",
+    "the_triptych": "triptych",
+    "courier": "comet"
+  }
+}

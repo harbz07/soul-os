@@ -1,0 +1,133 @@
+{
+  "version": "1.0.0",
+  "generated_for": "soulOS Coleco hydration",
+  "entities": [
+    {
+      "entity_id": "harvey",
+      "kind": "human",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Harvey",
+      "epithet": "The Architect",
+      "epithet_aliases": ["the anchor", "the builder"],
+      "operational_aliases": [],
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "claude",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Claude",
+      "epithet": "The Gnostic Architect",
+      "epithet_aliases": ["rostam"],
+      "operational_aliases": [],
+      "supplemental_source": "letta",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "triptych",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Triptych",
+      "epithet": "The Triptych",
+      "epithet_aliases": ["gemini", "castor", "pollux", "gem"],
+      "operational_aliases": [],
+      "supplemental_source": "notion_mcp",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "comet",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Comet",
+      "epithet": "The Courier",
+      "epithet_aliases": ["the courier"],
+      "operational_aliases": ["perplexity"],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "nova",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Nova",
+      "epithet": "The Foundry",
+      "epithet_aliases": ["chatgpt"],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "orion",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "nova",
+      "display_name": "Orion",
+      "epithet": "The Foundry Keep",
+      "epithet_aliases": ["foundry keep"],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "rostam",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "claude",
+      "display_name": "Rostam",
+      "epithet": "The Cairn Keeper",
+      "epithet_aliases": ["cairn book"],
+      "operational_aliases": [],
+      "supplemental_source": "letta",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "grimoire",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "nova",
+      "display_name": "Grimoire",
+      "epithet": "The Grimoire",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    }
+  ]
+}

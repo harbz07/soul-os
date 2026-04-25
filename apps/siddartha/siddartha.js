@@ -6,7 +6,7 @@
 // - D1 write-back on /api/route, /converse, /message, /chain, /reply
 // - All D1 ops degrade silently when DB binding is absent
 // - Samsara (PvE debate engine) lives in apps/samsara — not patched here
-// - Bindings needed: COMET (service), MAILBOX (KV), CAMPFIRE_LEDGER (KV), DB (D1)
+// - Bindings needed: COLECO (service), COMET (service), MAILBOX (KV), CAMPFIRE_LEDGER (KV), DB (D1)
 
 import {
   sessionOpen, sessionClose, sessionIncrementTurns, sessionGet, sessionList,
@@ -142,7 +142,35 @@ async function kvMailboxClear(env, agentId, mode = "read") {
 
 // ── Mem0 Hydration ─────────────────────────────────────
 
+async function hydrateViaColeco(agentName, agentConfig, env) {
+  if (!env.COLECO || typeof env.COLECO.fetch !== "function") return null;
+  try {
+    const req = new Request("https://coleco.internal/api/hydrate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        agent: agentName,
+        user_id: "harvey",
+        query: agentConfig.searchTerms,
+        top_k: 12
+      })
+    });
+    const resp = await env.COLECO.fetch(req);
+    if (!resp.ok) return null;
+    const data = await resp.json().catch(() => ({}));
+    if (typeof data.system_prompt === "string" && data.system_prompt.trim()) {
+      return data.system_prompt;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function hydrateAgent(agentName, agentConfig, env) {
+  const colecoPrompt = await hydrateViaColeco(agentName, agentConfig, env);
+  if (colecoPrompt) return colecoPrompt;
+
   const token = env.MEM0_API_KEY || "";
   if (!token) return `You are ${agentConfig.epithet}, a member of Harvey's Constellation in soulOS.`;
   try {

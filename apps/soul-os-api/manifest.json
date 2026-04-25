@@ -11,7 +11,7 @@
     "GET  /waypoints": "Siddhartha waypoint registry",
     "GET  /mailbox/:agent": "Siddhartha agent mailbox",
     "POST /v1/chat/completions": "Siddhartha OpenAI-compatible chat",
-    "POST /api/route": "Siddhartha memory-hydrated agent call",
+    "POST /api/route": "Siddhartha agent call (Coleco-mediated hydration)",
     "POST /dispatch": "Siddhartha passage dispatch",
     "POST /message": "Siddhartha inter-agent message",
     "POST /chain": "Siddhartha multi-hop chain",

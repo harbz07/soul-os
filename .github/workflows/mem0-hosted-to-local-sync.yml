@@ -1,0 +1,56 @@
+name: Sync hosted mem0 to local OpenMemory
+
+on:
+  workflow_dispatch:
+    inputs:
+      user_id:
+        description: "User ID to sync"
+        required: false
+        default: "harvey"
+      import_mode:
+        description: "Import mode for OpenMemory collisions"
+        required: false
+        default: "overwrite"
+  schedule:
+    - cron: "25 * * * *"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mem0ai httpx python-dotenv
+
+      - name: Run hosted -> local sync
+        env:
+          MEM0_API_KEY: ${{ secrets.MEM0_API_KEY }}
+          LOCAL_OPENMEMORY_URL: ${{ secrets.LOCAL_OPENMEMORY_URL }}
+        run: |
+          python tools/mem0-sync/hosted_to_local_sync.py \
+            --user-id "${{ github.event.inputs.user_id || 'harvey' }}" \
+            --local-base-url "${LOCAL_OPENMEMORY_URL}" \
+            --import-mode "${{ github.event.inputs.import_mode || 'overwrite' }}" \
+            --summary-path "tools/mem0-sync/artifacts/last_sync_summary.json"
+
+      - name: Upload sync summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mem0-sync-summary
+          path: |
+            tools/mem0-sync/artifacts/last_sync_summary.json
+            tools/mem0-sync/artifacts/memories_export.zip
+          if-no-files-found: warn
