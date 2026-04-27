@@ -29,6 +29,9 @@ __pycache__/
 .env.*
 !.env.example
 
+# External dependencies / local sandboxes
+memory_stores/
+
 # IDE & OS noise
 .vscode/
 .idea/
