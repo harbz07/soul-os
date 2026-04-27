@@ -7,12 +7,15 @@
     "comet": "comet",
     "perplexity": "comet",
     "nova": "nova",
+    "nova_gpt": "nova",
     "chatgpt": "nova",
     "orion": "orion",
+    "the_fuckface": "the_fuckface",
+    "fuckface": "the_fuckface",
     "rostam": "rostam"
   },
   "legacy_aliases": {
-    "foundry_keep": "orion",
+    "foundry_keep": "foundry_keep",
     "gnostic_architect": "claude",
     "the_triptych": "triptych",
     "courier": "comet"

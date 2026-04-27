@@ -71,10 +71,10 @@
       "role_tier": "primary",
       "parent_entity_id": null,
       "display_name": "Nova",
-      "epithet": "The Foundry",
+      "epithet": "The Baseline",
       "epithet_aliases": ["chatgpt"],
-      "operational_aliases": [],
-      "supplemental_source": "none",
+      "operational_aliases": ["nova_gpt"],
+      "supplemental_source": "nova_baseline",
       "memory": {
         "shared_write": true,
         "scoped_write": true,
@@ -87,13 +87,45 @@
       "role_tier": "satellite",
       "parent_entity_id": "nova",
       "display_name": "Orion",
-      "epithet": "The Foundry Keep",
-      "epithet_aliases": ["foundry keep"],
-      "operational_aliases": [],
-      "supplemental_source": "none",
+      "epithet": "ORION",
+      "epithet_aliases": ["orion"],
+      "operational_aliases": ["orion_spec"],
+      "supplemental_source": "orion_spec",
       "memory": {
         "shared_write": false,
         "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "the_fuckface",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "nova",
+      "display_name": "The Fuckface",
+      "epithet": "Boundary Override",
+      "epithet_aliases": ["fuckface"],
+      "operational_aliases": [],
+      "supplemental_source": "the_fuckface_overlay",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "foundry_keep",
+      "kind": "other",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Foundry Keep",
+      "epithet": "Collective Environment",
+      "epithet_aliases": ["foundry keep"],
+      "operational_aliases": ["foundry"],
+      "supplemental_source": "foundry_keep",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": false,
         "scoped_read": true
       }
     },
