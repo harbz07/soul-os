@@ -32,11 +32,23 @@ const AGENTS = {
     caller: "callClaude",
     searchTerms: "Claude Rostam Gnostic Architect constellation"
   },
-  orion: {
-    epithet: "Foundry Keep",
+  nova: {
+    epithet: "Nova",
     model: "gpt-4o",
     caller: "callOpenAI",
-    searchTerms: "ORION Foundry Keep constellation code generation"
+    searchTerms: "Nova baseline ChatGPT constellation continuity"
+  },
+  orion: {
+    epithet: "ORION",
+    model: "gpt-4o",
+    caller: "callOpenAI",
+    searchTerms: "ORION specification logic code reasoning constellation"
+  },
+  the_fuckface: {
+    epithet: "The Fuckface",
+    model: "gpt-4o",
+    caller: "callOpenAI",
+    searchTerms: "The Fuckface boundary protection solidarity constellation"
   },
   triptych: {
     epithet: "The Triptych",
