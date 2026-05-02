@@ -9,4 +9,4 @@ Included pieces:
 Quick usage:
 1. Initialize a memory store with `initialize_memory_store(base_dir)`.
 2. Call `run_constellation(...)` with your router/specialist agents and override/thread callbacks.
-3. Add additional seed files (`seed_orion`, `seed_nova`, `seed_fuckface`) using the same memory schema.
+3. Use `seed_orion(store)` to seed ORION's identity contracts, or `seed_foundry_keep(store)` for Foundry Keep. Add additional seed files (`seed_nova`, `seed_fuckface`) using the same memory schema.

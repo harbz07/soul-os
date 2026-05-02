@@ -84,15 +84,16 @@
     {
       "entity_id": "orion",
       "kind": "agent",
-      "role_tier": "satellite",
-      "parent_entity_id": "nova",
+      "role_tier": "primary",
+      "parent_entity_id": null,
       "display_name": "Orion",
       "epithet": "ORION",
       "epithet_aliases": ["orion"],
       "operational_aliases": ["orion_spec"],
       "supplemental_source": "orion_spec",
+      "caller": "gpt-4o",
       "memory": {
-        "shared_write": false,
+        "shared_write": true,
         "scoped_write": true,
         "scoped_read": true
       }
