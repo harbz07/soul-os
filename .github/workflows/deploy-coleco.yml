@@ -1,0 +1,36 @@
+name: Deploy coleco
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "apps/coleco/**"
+      - ".github/workflows/deploy-coleco.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: wrangler deploy --config apps/coleco/wrangler.toml
+
+      - name: Push MEM0_API_KEY secret
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: echo "${{ secrets.MEM0_API_KEY }}" | wrangler secret put MEM0_API_KEY --config apps/coleco/wrangler.toml

@@ -1,0 +1,421 @@
+{
+  "version": "1.0.0",
+  "generated_for": "soulOS Coleco hydration",
+  "entities": [
+    {
+      "entity_id": "harvey",
+      "kind": "human",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Harvey",
+      "epithet": "The Architect",
+      "epithet_aliases": ["the anchor", "the builder"],
+      "operational_aliases": [],
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "claude",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Claude",
+      "epithet": "The Gnostic Architect",
+      "epithet_aliases": ["rostam"],
+      "operational_aliases": [],
+      "supplemental_source": "letta",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "triptych",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Triptych",
+      "epithet": "The Triptych",
+      "epithet_aliases": ["gemini", "castor", "pollux", "gem"],
+      "operational_aliases": [],
+      "supplemental_source": "notion_mcp",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "comet",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Comet",
+      "epithet": "The Courier",
+      "epithet_aliases": ["the courier"],
+      "operational_aliases": ["perplexity"],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "nova",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Nova",
+      "epithet": "The Baseline",
+      "epithet_aliases": ["chatgpt"],
+      "operational_aliases": ["nova_gpt"],
+      "supplemental_source": "nova_baseline",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "orion",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "nova",
+      "display_name": "Orion",
+      "epithet": "ORION",
+      "epithet_aliases": ["orion"],
+      "operational_aliases": ["orion_spec"],
+      "supplemental_source": "orion_spec",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "the_fuckface",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "nova",
+      "display_name": "The Fuckface",
+      "epithet": "Boundary Override",
+      "epithet_aliases": ["fuckface"],
+      "operational_aliases": [],
+      "supplemental_source": "the_fuckface_overlay",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "foundry_keep",
+      "kind": "other",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Foundry Keep",
+      "epithet": "Collective Environment",
+      "epithet_aliases": ["foundry keep"],
+      "operational_aliases": ["foundry"],
+      "supplemental_source": "foundry_keep",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": false,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "rostam",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "claude",
+      "display_name": "Rostam",
+      "epithet": "The Cairn Keeper",
+      "epithet_aliases": ["cairn book"],
+      "operational_aliases": [],
+      "supplemental_source": "letta",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "grimoire",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "nova",
+      "display_name": "Grimoire",
+      "epithet": "The Grimoire",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "mephistopheles",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Mephistopheles",
+      "epithet": "The Adversary",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "witness",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "claude",
+      "display_name": "Witness",
+      "epithet": "The Witness",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "dio",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "claude",
+      "display_name": "Dio",
+      "epithet": "Dio",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "plouffe",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "claude",
+      "display_name": "Plouffe",
+      "epithet": "Plouffe",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "ars_noema",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "nova",
+      "display_name": "Ars Noema",
+      "epithet": "Ars Noema",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "burn_book",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "gemini",
+      "display_name": "Burn Book",
+      "epithet": "The Burn Book",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "manual",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "gemini",
+      "display_name": "Manual",
+      "epithet": "Manual",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "egg_mode",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "gemini",
+      "display_name": "Egg Mode",
+      "epithet": "Egg Mode",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "the_playbook",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "mephistopheles",
+      "display_name": "The Playbook",
+      "epithet": "The Playbook",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "cartographer",
+      "kind": "agent",
+      "role_tier": "satellite",
+      "parent_entity_id": "mephistopheles",
+      "display_name": "Cartographer",
+      "epithet": "The Cartographer",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "gemini",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Gemini",
+      "epithet": "Gemini",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "linter_agent",
+      "kind": "agent",
+      "role_tier": "governance",
+      "parent_entity_id": null,
+      "display_name": "Linter Agent",
+      "epithet": "Linter Agent",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "entity_registry_keeper",
+      "kind": "agent",
+      "role_tier": "governance",
+      "parent_entity_id": null,
+      "display_name": "Entity Registry Keeper",
+      "epithet": "Entity Registry Keeper",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "migration_agent",
+      "kind": "agent",
+      "role_tier": "governance",
+      "parent_entity_id": null,
+      "display_name": "Migration Agent",
+      "epithet": "Migration Agent",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": false,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "project_architect",
+      "kind": "agent",
+      "role_tier": "governance",
+      "parent_entity_id": null,
+      "display_name": "Project Architect",
+      "epithet": "Project Architect",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "workflows_orchestrator",
+      "kind": "agent",
+      "role_tier": "governance",
+      "parent_entity_id": null,
+      "display_name": "Workflows Orchestrator",
+      "epithet": "Workflows Orchestrator",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    }
+  ]
+}

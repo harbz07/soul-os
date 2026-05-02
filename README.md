@@ -56,6 +56,18 @@ Siddartha now writes to `soul-os-cognitive-db` (D1) on every agent exchange:
 wrangler d1 execute soul-os-cognitive-db --remote --file=apps/siddartha/migrations/0001_initial.sql
 ```
 
+## External Memory Wiring
+
+Memory/agent wiring is intentionally treated as an external dependency.
+
+- Contract doc: `docs/external-memory-service.md`
+- Smoke check: `python tools/smoke_check_external_memory.py`
+
+Required env vars for the smoke check:
+
+- `CONSTELLATION_API_URL`
+- `CONSTELLATION_API_KEY`
+
 ## Status
 
 soulOS is under active development. Current focus:

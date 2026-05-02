@@ -1,0 +1,21 @@
+name = "coleco"
+main = "coleco.js"
+compatibility_date = "2024-11-01"
+
+account_id = "31e9e8c6fcda0c10e7a4331a8dfb89fe"
+
+workers_dev = true
+
+# Secrets (managed via Cloudflare dashboard or `wrangler secret put`):
+#   MEM0_API_KEY
+#   LETTA_SUPPLEMENTAL_URL
+#   LETTA_API_KEY
+#   NOTION_SUPPLEMENTAL_URL
+#   NOTION_SUPPLEMENTAL_TOKEN
+#   CONSTELLATION_REGISTRY_URL      <- URL serving entities.v1.json
+#   CONSTELLATION_MAPPINGS_URL      <- URL serving mappings.v1.json
+#   NOVA_SUPPLEMENTAL_URL           <- Nova baseline supplemental source
+#   ORION_SUPPLEMENTAL_URL          <- ORION spec supplemental source
+#   THE_FUCKFACE_SUPPLEMENTAL_URL   <- The Fuckface overlay supplemental source
+#   FOUNDRY_KEEP_SUPPLEMENTAL_URL   <- Foundry Keep environment context source
+#   SUPPLEMENTAL_PROXY_URL          <- generic proxy for supplemental fetches

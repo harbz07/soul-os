@@ -1,5 +1,5 @@
 {
   "name": "siddartha",
   "description": "The inner monastery/Constellation logic unity engine",
-  "bindings": ["API", "CAMPFIRE_LEDGER", "COMET", "MAILBOX"]
+  "bindings": ["API", "CAMPFIRE_LEDGER", "COLECO", "COMET", "MAILBOX"]
 }

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://soul-os.cc/schemas/constellation-registry.schema.json",
+  "title": "Constellation Registry",
+  "type": "object",
+  "required": ["version", "entities"],
+  "properties": {
+    "version": { "type": "string" },
+    "generated_for": { "type": "string" },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "entity_id",
+          "kind",
+          "role_tier",
+          "parent_entity_id",
+          "display_name",
+          "epithet",
+          "epithet_aliases",
+          "operational_aliases",
+          "memory"
+        ],
+        "properties": {
+          "entity_id": { "type": "string" },
+          "kind": { "type": "string", "enum": ["human", "agent", "other"] },
+          "role_tier": { "type": "string", "enum": ["primary", "satellite", "governance"] },
+          "parent_entity_id": { "type": ["string", "null"] },
+          "display_name": { "type": "string" },
+          "epithet": { "type": "string" },
+          "epithet_aliases": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "operational_aliases": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "supplemental_source": { "type": "string" },
+          "memory": {
+            "type": "object",
+            "required": ["shared_write", "scoped_write", "scoped_read"],
+            "properties": {
+              "shared_write": { "type": "boolean" },
+              "scoped_write": { "type": "boolean" },
+              "scoped_read": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

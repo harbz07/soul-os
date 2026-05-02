@@ -1,0 +1,10 @@
+{
+  "name": "coleco",
+  "description": "Context broker for federated memory hydration and ensemble manifest assembly",
+  "bindings": ["MEM0", "SUPPLEMENTAL"],
+  "routes": {
+    "GET /health": "Coleco health and configuration status",
+    "POST /api/manifest": "Build Ensemble_Manifest with graceful degradation",
+    "POST /api/hydrate": "Build manifest and return hydration-ready system prompt"
+  }
+}

@@ -10,6 +10,10 @@ workers_dev = true
 binding = "COMET"
 service = "comet-courier"
 
+[[services]]
+binding = "COLECO"
+service = "coleco"
+
 [[kv_namespaces]]
 binding = "MAILBOX"
 id = "5449b80d40b54cca91f9766f452ea517"
