@@ -1,5 +1,33 @@
 {
   "name": "siddartha",
   "description": "The inner monastery/Constellation logic unity engine",
-  "bindings": ["API", "CAMPFIRE_LEDGER", "COLECO", "COMET", "MAILBOX"]
+  "bindings": ["CAMPFIRE_LEDGER", "COLECO", "COMET", "DB", "MAILBOX"],
+  "routes": {
+    "GET /": "Siddartha manifest",
+    "GET /health": "Health check",
+    "GET /waypoints": "Waypoint registry",
+    "GET /mailbox/:agent": "Read agent mailbox",
+    "POST /mailbox/:agent/ack": "Acknowledge a mailbox message",
+    "POST /mailbox/:agent/clear": "Clear mailbox messages",
+    "POST /api/route": "Memory-hydrated agent call (Coleco-mediated)",
+    "POST /dispatch": "Passage dispatch",
+    "POST /message": "Inter-agent message",
+    "POST /reply": "Inter-agent reply",
+    "POST /chain": "Multi-hop agent chain",
+    "POST /parietal": "Semantic gravity overlay",
+    "POST /log": "Atlas session log",
+    "POST /v1/chat/completions": "OpenAI-compatible chat endpoint",
+    "POST /converse": "Multi-agent conversation",
+    "POST /thread": "Open or retrieve a conversation thread",
+    "GET /thread/:id": "Thread + traces + graph",
+    "GET /thread/:id/graph": "Conversation graph for a thread",
+    "GET /threads": "List all threads",
+    "GET /graph/:agent": "Agent's full graph across all threads",
+    "GET /sessions": "List recent sessions",
+    "GET /session/:id": "Session + its traces",
+    "GET /agents/state": "All agent state snapshots",
+    "POST /debate": "Run a PvE structured debate via MindBridge Router",
+    "GET /debates": "List all debate records",
+    "GET /debate/:id": "Retrieve a single debate record"
+  }
 }

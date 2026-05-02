@@ -6,5 +6,5 @@ This app is the public API gateway for Soul-OS.
 - Upstream: `siddartha` (Cloudflare Worker binding)
 - Manifest: routes + descriptions live in `manifest.json`
 - Implementation: Cloudflare Worker in `soul-os-api.js` that:
-  - Exposes `/` and `/health` for status/identity
-  - Proxies `/v1/chat/completions`, `/api/route`, `/dispatch`, `/message`, `/chain`, `/parietal`, `/log` to Siddhartha
+  - Exposes `/` (manifest) and `/health` directly
+  - Transparently proxies all other requests to Siddartha, including D1 graph routes, debate routes, mailbox routes, and all agent-call endpoints

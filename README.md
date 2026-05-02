@@ -5,7 +5,8 @@ soulOS is a constellation-based operating system for AI agents – a runtime whe
 At its core, soulOS wires together:
 
 - **Siddartha** – the inner monastery / core Constellation logic (agent routing, calls to LLMs, memory hydration, Notion/Discord dispatch, KV mailbox, parietal overlay & campfire engine).
-- **soulOS API** – the public gateway Worker that fronts `api.soul-os.cc` and routes external requests into Siddartha.
+- **Coleco** – the context broker that assembles federated memory hydration for each agent via `POST /api/hydrate`, producing a ready-to-use `system_prompt` and an `Ensemble_Manifest` with graceful degradation across all supplemental sources.
+- **soulOS API** – the public gateway Worker that fronts `api.soul-os.cc` and transparently proxies all requests into Siddartha.
 - **soulOS Frontend** – the Cognitive Runtime UI served at `soul-os.cc`, used to interact with and observe the constellation.
 - **Comet Courier** – the transit layer for dispatching messages, passages, and waypoints across the ecosystem.
 - **Bridge / Gemini-Notion Proxy** – integration Workers that safely connect external APIs (Mem0, Notion, Discord, etc.) into the Constellation without exposing secrets to the frontend.
@@ -18,17 +19,18 @@ The project is backed by a Cerebral SDK and a set of cognitive design primitives
 - **Memory & State:** Mem0 for semantic memory, Notion databases for structured knowledge and traces, KV/mailbox for transient message passing, D1 (`soul-os-cognitive-db`) for queryable session/trace/graph persistence.
 - **Interface:** Browser UI talking to the API gateway and bridge Workers via HTTP, with CORS-safe, OpenAI-style endpoints.
 
-The `apps/` directory holds each Worker as its own app; `docs/` captures architecture notes, and `packages/` is reserved for shared libraries and the Cerebral SDK.
+The `apps/` directory holds each Worker as its own app; `docs/` captures architecture notes, and `packages/` is reserved for future shared libraries and the Cerebral SDK (not yet extracted).
 
 ## App Directory
 
 - `apps/siddartha/` – core Constellation router (v4). Includes `d1.js` persistence layer and `migrations/`.
-- `apps/soul-os-api/` – public API gateway at `api.soul-os.cc`.
+- `apps/soul-os-api/` – public API gateway at `api.soul-os.cc`. Transparent proxy to Siddartha.
 - `apps/soul-os-frontend/` – Cognitive Runtime UI at `soul-os.cc`.
+- `apps/coleco/` – federated memory hydration broker; wired into Siddartha as a service binding.
 - `apps/comet-courier/` – Perplexity-backed search/courier agent.
 - `apps/bridge-worker/` – frontend integration bridge (chat, memory, traces).
 - `apps/gemini-notion-proxy/` – secure proxy for Gemini + Notion APIs.
-- `apps/castor-hub/` – Castor's terminal surface (`urtrashbin@yourdesktop.lit`).
+- `apps/castor-hub/` – Castor's terminal surface (`urtrashbin@yourdesktop.lit`). Wrangler config + deployment pending.
 - `apps/samsara/` – PvE philosophical debate engine (MindBridge/Railway). Not deployed to Cloudflare — see `apps/samsara/DEPLOY.md`.
 
 ## D1 Persistence Layer (v4)
@@ -50,6 +52,9 @@ Siddartha now writes to `soul-os-cognitive-db` (D1) on every agent exchange:
 - `GET /sessions` — list recent sessions
 - `GET /session/:id` — session + its traces
 - `GET /agents/state` — all agent state snapshots
+- `POST /debate` — run a PvE structured debate via MindBridge Router
+- `GET /debates` — list all debate records
+- `GET /debate/:id` — retrieve a single debate record
 
 **First-time setup:** Run the D1 migration via GitHub Actions → `Run D1 Migrations`, or locally:
 ```bash
@@ -74,6 +79,8 @@ soulOS is under active development. Current focus:
 
 - ✅ D1 session/trace/graph layer wired into Siddartha
 - ✅ Samsara (PvE debate engine) added to repo under `apps/samsara/`
+- ✅ Debate routes (`/debate`, `/debates`, `/debate/:id`) added to Siddartha
+- ✅ Coleco context broker deployed and wired into Siddartha as a service binding
 - Cerebral SDK extraction (shared primitives from Siddartha into `packages/`)
 - Castor Hub wrangler config + deployment
 - Frontend agent-selector (currently hardcoded to ORION)
