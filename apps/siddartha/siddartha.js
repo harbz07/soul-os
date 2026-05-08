@@ -379,14 +379,26 @@ async function callDeepSeek(request, systemPrompt, apiKey) {
 }
 
 async function callMistral(request, systemPrompt, apiKey, model = "mistral-large-latest") {
+  if (!apiKey) {
+    throw new Error("MISTRAL_API_KEY not configured");
+  }
+
   const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: request }] })
   });
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message || "Mistral API error");
-  return data.choices[0].message.content;
+  if (!res.ok) {
+    throw new Error(`Mistral: ${data?.error?.message || data?.message || JSON.stringify(data)}`);
+  }
+
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error(`Mistral: unexpected response shape: ${JSON.stringify(data)}`);
+  }
+
+  return content;
 }
 
 // ── Campfire helpers (Notion upsert + idempotency + receipts) ───────────────
