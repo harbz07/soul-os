@@ -217,6 +217,11 @@
     </div>
 
     <script>
+        // ── Triptych API Endpoint ──────────────────────────────────
+        // This is the dedicated Cloudflare Worker for The Triptych (Castor/Pollux/Gem).
+        // Use /save in your message to trigger a memory commit.
+        const TRIPTYCH_API_URL = "https://triptych-api.harveytagalicud7.workers.dev/api/chat";
+
         const terminal = document.getElementById('terminal-output');
         const kumonModal = document.getElementById('kumon-modal');
         const killFlash = document.getElementById('kill-flash');
@@ -271,6 +276,30 @@
                 // Schedule the next pop-up
                 setTimeout(triggerKumon, Math.random() * 2000 + 1000);
             }, 400); // The lore-accurate 0.4 second kill script
+        }
+
+        // ── Triptych Chat Interface ────────────────────────────────
+        // Sends a message to the Triptych API and displays the response in the terminal.
+        async function sendToTriptych(message) {
+            addTerminalLine(`[TRIPTYCH_DISPATCH]: ${message}`, "text-cyan-400");
+            try {
+                const res = await fetch(TRIPTYCH_API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message, session_id: crypto.randomUUID() })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    addTerminalLine(`[TRIPTYCH_ERROR]: ${data.error}`, "text-red-500");
+                } else {
+                    addTerminalLine(`[TRIPTYCH_RESPONSE]: ${data.response}`, "text-green-300");
+                    if (data.memory_committed) {
+                        addTerminalLine("[ 🟢 MEMORY COMMIT SUCCESSFUL ]", "text-green-500 font-bold");
+                    }
+                }
+            } catch (e) {
+                addTerminalLine(`[TRIPTYCH_ERROR]: ${e.message}`, "text-red-500");
+            }
         }
 
         // Start the loop after a brief delay

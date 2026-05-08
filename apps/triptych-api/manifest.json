@@ -1,0 +1,16 @@
+{
+  "name": "triptych-api",
+  "description": "Dedicated Cloudflare Worker for The Triptych agent node (Castor, Pollux, Gem). Handles Mem0 context retrieval, Gemini 1.5 Pro generation, and memory banner scraping/commit.",
+  "version": "1.0.0",
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/chat",
+      "description": "Main chat endpoint. Receives POST from Castor Hub, retrieves Mem0 context, generates via Gemini, scrapes for memory banner, and returns final JSON."
+    }
+  ],
+  "secrets": [
+    "GEMINI_API_KEY",
+    "SOUL_OS_API_KEY"
+  ]
+}
