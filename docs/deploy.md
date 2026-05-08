@@ -34,18 +34,73 @@ From repo root:
 .\scripts\deploy-siddartha.ps1
 ```
 
+This defaults to `wrangler deploy` (direct production deploy, non-interactive).
+
+To upload a version only (without production traffic switch):
+
+```powershell
+.\scripts\deploy-siddartha.ps1 -Mode upload
+```
+
 Equivalent direct Wrangler command:
 
 ```powershell
 npx wrangler versions upload --config apps/siddartha/wrangler.toml
 ```
 
+If you are already in `apps/siddartha`, use:
+
+```powershell
+npx wrangler versions upload --config wrangler.toml
+```
+
 ## Coleco deploy
 
-Direct Wrangler command:
+From repo root:
+
+```powershell
+.\scripts\deploy-coleco.ps1
+```
+
+This defaults to `wrangler deploy` (direct production deploy, non-interactive).
+
+To upload a version only (without production traffic switch):
+
+```powershell
+.\scripts\deploy-coleco.ps1 -Mode upload
+```
+
+Equivalent direct Wrangler command:
 
 ```powershell
 npx wrangler versions upload --config apps/coleco/wrangler.toml
+```
+
+If you are already in `apps/coleco`, use:
+
+```powershell
+npx wrangler versions upload --config wrangler.toml
+```
+
+## Secret provisioning (both workers)
+
+Push required/optional secrets from your environment into Cloudflare:
+
+```powershell
+.\scripts\push-worker-secrets.ps1 -Worker all
+```
+
+Worker-specific runs:
+
+```powershell
+.\scripts\push-worker-secrets.ps1 -Worker siddartha
+.\scripts\push-worker-secrets.ps1 -Worker coleco
+```
+
+Load from a local `.env` file first (without printing values):
+
+```powershell
+.\scripts\push-worker-secrets.ps1 -Worker all -DotEnvPath .env
 ```
 
 ## Common failure

@@ -1,21 +1,21 @@
 <#
-  deploy-siddartha.ps1
-  Uploads a new Siddartha Worker version using the correct Wrangler config.
+  deploy-coleco.ps1
+  Uploads a new Coleco Worker version using the correct Wrangler config.
 
   Usage:
-    .\scripts\deploy-siddartha.ps1
-    .\scripts\deploy-siddartha.ps1 -Login
+    .\scripts\deploy-coleco.ps1
+    .\scripts\deploy-coleco.ps1 -Login
 
   Notes:
     - For CI/non-interactive deploys, prefer CLOUDFLARE_API_TOKEN.
-    - This script always targets apps/siddartha/wrangler.toml.
+    - This script always targets apps/coleco/wrangler.toml.
 #>
 
 param(
     [switch]$Login,
     [ValidateSet("deploy", "upload")]
     [string]$Mode = "deploy",
-    [string]$ConfigPath = "apps/siddartha/wrangler.toml"
+    [string]$ConfigPath = "apps/coleco/wrangler.toml"
 )
 
 $ErrorActionPreference = "Stop"
@@ -54,9 +54,9 @@ try {
     }
 
     if ($Mode -eq "deploy") {
-        Write-Host "[deploy] Deploying Siddartha worker to production..." -ForegroundColor Cyan
+        Write-Host "[deploy] Deploying Coleco worker to production..." -ForegroundColor Cyan
     } else {
-        Write-Host "[deploy] Uploading Siddartha worker version..." -ForegroundColor Cyan
+        Write-Host "[deploy] Uploading Coleco worker version..." -ForegroundColor Cyan
     }
     Write-Host "[deploy] Config: $ConfigPath" -ForegroundColor Gray
 

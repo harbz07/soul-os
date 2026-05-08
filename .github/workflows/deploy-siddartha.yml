@@ -30,12 +30,68 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: wrangler deploy --config apps/siddartha/wrangler.toml
 
-      - name: Push MINDBRIDGE_ROUTER_URL secret
+      - name: Push Worker secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: echo "${{ secrets.MINDBRIDGE_ROUTER_URL }}" | wrangler secret put MINDBRIDGE_ROUTER_URL --config apps/siddartha/wrangler.toml
+          MEM0_API_KEY: ${{ secrets.MEM0_API_KEY }}
+          COMET_SECRET: ${{ secrets.COMET_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_CAMPFIRE_TALKS_DB_ID: ${{ secrets.NOTION_CAMPFIRE_TALKS_DB_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          CAMPFIRE_WEBHOOK_URL: ${{ secrets.CAMPFIRE_WEBHOOK_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          MINDBRIDGE_ROUTER_URL: ${{ secrets.MINDBRIDGE_ROUTER_URL }}
+          MINDBRIDGE_API_KEY: ${{ secrets.MINDBRIDGE_API_KEY }}
+        run: |
+          set -euo pipefail
+          CONFIG="apps/siddartha/wrangler.toml"
 
-      - name: Push MINDBRIDGE_API_KEY secret
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: echo "${{ secrets.MINDBRIDGE_API_KEY }}" | wrangler secret put MINDBRIDGE_API_KEY --config apps/siddartha/wrangler.toml
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "CLOUDFLARE_API_TOKEN is required"
+            exit 1
+          fi
+
+          for required in MEM0_API_KEY COMET_SECRET OPENAI_API_KEY; do
+            value="${!required:-}"
+            if [ -z "$value" ]; then
+              echo "${required} is required for Siddartha"
+              exit 1
+            fi
+          done
+
+          REQUIRED=(
+            MEM0_API_KEY
+            COMET_SECRET
+            OPENAI_API_KEY
+          )
+
+          OPTIONAL=(
+            NOTION_TOKEN
+            NOTION_CAMPFIRE_TALKS_DB_ID
+            DISCORD_WEBHOOK_URL
+            CAMPFIRE_WEBHOOK_URL
+            ANTHROPIC_API_KEY
+            GOOGLE_API_KEY
+            DEEPSEEK_API_KEY
+            MINDBRIDGE_ROUTER_URL
+            MINDBRIDGE_API_KEY
+          )
+
+          for name in "${REQUIRED[@]}"; do
+            value="${!name:-}"
+            echo "Pushing required secret: ${name}"
+            printf "%s" "$value" | wrangler secret put "$name" --config "$CONFIG"
+          done
+
+          for name in "${OPTIONAL[@]}"; do
+            value="${!name:-}"
+            if [ -z "$value" ]; then
+              echo "Skipping optional secret (not set): ${name}"
+              continue
+            fi
+            echo "Pushing optional secret: ${name}"
+            printf "%s" "$value" | wrangler secret put "$name" --config "$CONFIG"
+          done
