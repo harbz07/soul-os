@@ -632,7 +632,9 @@ var siddartha_hydrated_default = {
           "GET  /campfire/events":         "Raw event tail for a campfire (?campfire_id, ?since)",
           "POST /campfire/render":         "Render current campfire state for a human (Anthropic call, cached)",
           "GET  /campfire/render/latest":  "Last cached render for a campfire",
-          "GET  /campfire/fires":          "List all registered campfires"
+          "GET  /campfire/fires":          "List all registered campfires",
+          "POST /memory/add":              "Write a memory to Mem0 under user_id triptych [Soul-Link]",
+          "POST /memory/search":           "Semantic search over Triptych memory lane [Soul-Link]"
         },
         mailbox: env.MAILBOX ? "KV-backed (persistent)" : "in-memory (ephemeral)",
         d1: env.DB ? "bound" : "missing",
@@ -1807,6 +1809,79 @@ var siddartha_hydrated_default = {
     // ── Campfire event-store routes (POST/GET /campfire/*) ───────────────────
     if (pathname.startsWith("/campfire")) {
       return handleCampfire(request, env);
+    }
+
+    // ── Memory API (Soul-Link authenticated via soul-os-api bouncer) ─────────
+    // POST /memory/add  — write a memory to Mem0 under user_id "triptych"
+    // POST /memory/search — semantic search over Triptych's memory lane
+    // Note: auth is enforced upstream by soul-os-api MASTER_KEY guard;
+    // these handlers trust that the request already passed the gate.
+
+    if (method === "POST" && pathname === "/memory/add") {
+      if (!env.MEM0_API_KEY) return errorResponse(503, "MEM0_API_KEY not configured");
+      let body;
+      try { body = await request.json(); } catch { return errorResponse(400, "Invalid JSON body"); }
+      const { content, user_id = "triptych", agent_id, tags = [], metadata = {} } = body;
+      if (!content) return errorResponse(400, "content is required");
+      try {
+        const res = await fetch("https://api.mem0.ai/v1/memories/", {
+          method: "POST",
+          headers: {
+            "Authorization": `Token ${env.MEM0_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            messages: [{ role: "user", content }],
+            user_id,
+            ...(agent_id ? { agent_id } : {}),
+            metadata: { source: "triptych", ...metadata, ...(tags.length ? { tags } : {}) }
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) return errorResponse(res.status, `Mem0 error: ${JSON.stringify(data)}`);
+        return jsonResponse({ ok: true, memory_id: data.id || null, user_id, content: content.slice(0, 80) });
+      } catch (e) {
+        return errorResponse(502, `Mem0 write failed: ${e.message}`);
+      }
+    }
+
+    if (method === "POST" && pathname === "/memory/search") {
+      if (!env.MEM0_API_KEY) return errorResponse(503, "MEM0_API_KEY not configured");
+      let body;
+      try { body = await request.json(); } catch { return errorResponse(400, "Invalid JSON body"); }
+      const { query, user_id = "triptych", top_k = 5 } = body;
+      if (!query) return errorResponse(400, "query is required");
+      try {
+        const res = await fetch("https://api.mem0.ai/v2/memories/search/", {
+          method: "POST",
+          headers: {
+            "Authorization": `Token ${env.MEM0_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            query,
+            filters: { user_id },
+            top_k
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) return errorResponse(res.status, `Mem0 error: ${JSON.stringify(data)}`);
+        const results = Array.isArray(data) ? data : (data.results || []);
+        return jsonResponse({
+          ok: true,
+          query,
+          user_id,
+          count: results.length,
+          results: results.map(r => ({
+            id: r.id,
+            memory: r.memory,
+            score: r.score ?? null,
+            created_at: r.created_at ?? null
+          }))
+        });
+      } catch (e) {
+        return errorResponse(502, `Mem0 search failed: ${e.message}`);
+      }
     }
 
     return errorResponse(404, `Route not found: ${method} ${pathname}. GET / for manifest.`);

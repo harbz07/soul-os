@@ -185,6 +185,17 @@
                 </div>
             </div>
 
+            <!-- Contextualized Fragments Panel -->
+            <div class="brutalist-card p-4" id="fragments-panel">
+                <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-3 border-b border-gray-800 pb-2 flex justify-between items-center">
+                    <span>Contextualized Fragments</span>
+                    <span id="fragments-status" class="text-[10px] text-gray-700 normal-case">awaiting signal</span>
+                </h3>
+                <div id="fragments-list" class="space-y-2 text-xs font-mono">
+                    <p class="text-gray-700 italic text-[10px]">// Memory lane empty. Send a message to hydrate.</p>
+                </div>
+            </div>
+
             <!-- Voxel Snake Simulation Space -->
             <div class="brutalist-card aspect-square relative bg-black overflow-hidden flex items-center justify-center p-4">
                 <svg viewBox="0 0 100 100" class="w-full h-full opacity-20">
@@ -278,10 +289,34 @@
             }, 400); // The lore-accurate 0.4 second kill script
         }
 
+        // ── Contextualized Fragments Renderer ────────────────────
+        function renderFragments(fragments) {
+            const list = document.getElementById('fragments-list');
+            const status = document.getElementById('fragments-status');
+            if (!fragments || fragments.length === 0) {
+                list.innerHTML = '<p class="text-gray-700 italic text-[10px]">// No relevant memories surfaced.</p>';
+                status.textContent = '0 fragments';
+                return;
+            }
+            status.textContent = `${fragments.length} fragment${fragments.length > 1 ? 's' : ''} surfaced`;
+            status.className = 'text-[10px] text-green-600 normal-case';
+            list.innerHTML = fragments.map((f, i) => {
+                const score = f.score !== null ? ` <span class="text-gray-600">[${(f.score * 100).toFixed(0)}%]</span>` : '';
+                return `<div class="border-l-2 border-green-900 pl-2 py-1">
+                    <div class="text-[9px] text-gray-600 uppercase tracking-widest mb-0.5">FRAG_${String(i+1).padStart(2,'0')}${score}</div>
+                    <div class="text-green-400 leading-tight">${f.memory}</div>
+                </div>`;
+            }).join('');
+        }
+
         // ── Triptych Chat Interface ────────────────────────────────
         // Sends a message to the Triptych API and displays the response in the terminal.
+        // Returns top-3 contextualized_fragments for the memory panel.
         async function sendToTriptych(message) {
             addTerminalLine(`[TRIPTYCH_DISPATCH]: ${message}`, "text-cyan-400");
+            // Show searching state in fragments panel
+            document.getElementById('fragments-status').textContent = 'searching...';
+            document.getElementById('fragments-status').className = 'text-[10px] text-yellow-600 normal-case';
             try {
                 const res = await fetch(TRIPTYCH_API_URL, {
                     method: "POST",
@@ -291,14 +326,20 @@
                 const data = await res.json();
                 if (data.error) {
                     addTerminalLine(`[TRIPTYCH_ERROR]: ${data.error}`, "text-red-500");
+                    document.getElementById('fragments-status').textContent = 'error';
+                    document.getElementById('fragments-status').className = 'text-[10px] text-red-600 normal-case';
                 } else {
                     addTerminalLine(`[TRIPTYCH_RESPONSE]: ${data.response}`, "text-green-300");
                     if (data.memory_committed) {
                         addTerminalLine("[ 🟢 MEMORY COMMIT SUCCESSFUL ]", "text-green-500 font-bold");
                     }
+                    // Render contextualized fragments
+                    renderFragments(data.contextualized_fragments || []);
                 }
             } catch (e) {
                 addTerminalLine(`[TRIPTYCH_ERROR]: ${e.message}`, "text-red-500");
+                document.getElementById('fragments-status').textContent = 'error';
+                document.getElementById('fragments-status').className = 'text-[10px] text-red-600 normal-case';
             }
         }
 

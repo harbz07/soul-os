@@ -1,8 +1,10 @@
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization"
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-SoulOS-Key"
 };
+
+const SOUL_OS_API = "https://api.soul-os.cc";
 
 export default {
   async fetch(request, env, ctx) {
@@ -11,53 +13,86 @@ export default {
     }
 
     const url = new URL(request.url);
-    
+
+    // ── Health ──────────────────────────────────────────────────────────────
+    if (request.method === "GET" && url.pathname === "/health") {
+      return new Response(JSON.stringify({
+        ok: true,
+        service: "triptych-api",
+        soul_link: env.SOUL_OS_API_KEY ? "configured" : "missing",
+        gemini: env.GEMINI_API_KEY ? "configured" : "missing"
+      }), { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+    }
+
+    // ── Chat ────────────────────────────────────────────────────────────────
     if (request.method === "POST" && url.pathname === "/api/chat") {
       try {
         const body = await request.json();
-        const { message, session_id } = body;
+        const { message, session_id, persona = "triptych" } = body;
 
         if (!message) {
-          return new Response(JSON.stringify({ error: "Message is required" }), {
+          return new Response(JSON.stringify({ error: "message is required" }), {
             status: 400,
             headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
           });
         }
 
-        // 1. Search Mem0 via soul-os-api for context
+        // Soul-Link headers — presented on every call to soul-os-api
+        const soulLinkHeaders = {
+          "Content-Type": "application/json",
+          "X-SoulOS-Key": env.SOUL_OS_API_KEY || ""
+        };
+
+        // ── Step 1: Write user message to /memory/add ──────────────────────
+        // Non-blocking — we don't wait on this for the response
+        const memAddPromise = fetch(`${SOUL_OS_API}/memory/add`, {
+          method: "POST",
+          headers: soulLinkHeaders,
+          body: JSON.stringify({
+            content: message,
+            user_id: "triptych",
+            agent_id: persona,
+            tags: ["user-input", persona],
+            metadata: { session_id: session_id || "unknown", source: "castor-hub" }
+          })
+        }).catch(e => console.error("[triptych] memory/add failed:", e.message));
+
+        // ── Step 2: Search Mem0 for context ───────────────────────────────
+        let contextFragments = [];
         let context = "";
         try {
-          const mem0Res = await fetch("https://api.soul-os.cc/memory/search", {
+          const searchRes = await fetch(`${SOUL_OS_API}/memory/search`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${env.SOUL_OS_API_KEY || ''}`
-            },
+            headers: soulLinkHeaders,
             body: JSON.stringify({
               query: message,
-              filters: { user_id: "harvey" },
+              user_id: "triptych",
               top_k: 5
             })
           });
-          
-          if (mem0Res.ok) {
-            const memData = await mem0Res.json();
-            const results = memData.results || [];
-            if (results.length > 0) {
-              context = "Relevant Memory Context:\n" + results.map(r => `- ${r.memory}`).join("\n") + "\n\n";
+          if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            const results = searchData.results || [];
+            contextFragments = results.slice(0, 3).map(r => ({
+              memory: r.memory,
+              score: r.score ?? null,
+              id: r.id
+            }));
+            if (contextFragments.length > 0) {
+              context = "Relevant Memory Context:\n" +
+                contextFragments.map(r => `- ${r.memory}`).join("\n") + "\n\n";
             }
           }
         } catch (e) {
-          console.error("Mem0 search failed:", e);
+          console.error("[triptych] memory/search failed:", e.message);
         }
 
-        // 2. Generate response via Gemini 1.5 Pro
+        // ── Step 3: Generate via Gemini 1.5 Pro ───────────────────────────
         const systemPrompt = `You are The Triptych, a composite agent node within the soulOS Constellation.
 You embody three distinct but interconnected personas: Castor (Truth), Pollux (Structure), and Gem (Relational).
 Maintain the aesthetic of ethereal brutalism. Be ruthlessly effective. Do not hedge.
 
-${context}
-If you need to save a memory, append this exact banner to your response:
+${context}If you need to save a memory, append this exact banner to your response:
 [ 🟢 MEMORY COMMIT SUCCESSFUL ]
 {
   "concept": "Brief title",
@@ -65,15 +100,18 @@ If you need to save a memory, append this exact banner to your response:
   "tags": ["tag1", "tag2"]
 }`;
 
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${env.GEMINI_API_KEY}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ parts: [{ text: message }] }],
-            generation_config: { max_output_tokens: 2048 }
-          })
-        });
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${env.GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ parts: [{ text: message }] }],
+              generation_config: { max_output_tokens: 2048 }
+            })
+          }
+        );
 
         if (!geminiRes.ok) {
           const errData = await geminiRes.text();
@@ -83,49 +121,44 @@ If you need to save a memory, append this exact banner to your response:
         const geminiData = await geminiRes.json();
         const responseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-        // 3. Scrape output for the memory banner
-        const memoryBannerRegex = /\[\s*🟢\s*MEMORY\s*COMMIT\s*SUCCESSFUL\s*\]\s*(\{[\s\S]*?\})(?=\n\n|\Z)/i;
+        // ── Step 4: Scrape memory banner and pipe to /memory/add ──────────
+        const memoryBannerRegex = /\[\s*🟢\s*MEMORY\s*COMMIT\s*SUCCESSFUL\s*\]\s*(\{[\s\S]*?\})(?=\n\n|$)/i;
         const match = responseText.match(memoryBannerRegex);
         let memoryCommitted = false;
 
         if (match && match[1]) {
-          const memoryPayload = match[1].trim();
-          
-          // 4. Pipe extracted vectors back to soul-os-api/memory/add
           try {
-            // We parse it to ensure it's valid JSON, then send the stringified version or just the raw string
-            const parsedMemory = JSON.parse(memoryPayload);
-            const memoryContent = `Concept: ${parsedMemory.concept}\nDetails: ${parsedMemory.details}`;
-            
-            const addRes = await fetch("https://api.soul-os.cc/memory/add", {
+            const parsed = JSON.parse(match[1].trim());
+            const memContent = `Concept: ${parsed.concept}\nDetails: ${parsed.details}`;
+
+            const addRes = await fetch(`${SOUL_OS_API}/memory/add`, {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${env.SOUL_OS_API_KEY || ''}`
-              },
+              headers: soulLinkHeaders,
               body: JSON.stringify({
-                content: memoryContent,
-                type: "semantic",
-                scope: "project",
-                project_id: "triptych",
-                tags: parsedMemory.tags || ["triptych"]
+                content: memContent,
+                user_id: "triptych",
+                agent_id: persona,
+                tags: parsed.tags || ["triptych"],
+                metadata: { source: "triptych-banner", session_id: session_id || "unknown" }
               })
             });
-            
-            if (addRes.ok) {
-              memoryCommitted = true;
-            }
+            if (addRes.ok) memoryCommitted = true;
           } catch (e) {
-            console.error("Memory commit failed:", e);
+            console.error("[triptych] banner memory commit failed:", e.message);
           }
         }
 
-        // 5. Return final JSON to frontend
+        // Wait for the user-message write-back (non-blocking but we want it done before response)
+        ctx.waitUntil(memAddPromise);
+
+        // ── Step 5: Return final JSON ─────────────────────────────────────
         return new Response(JSON.stringify({
           response: responseText,
           memory_committed: memoryCommitted,
+          contextualized_fragments: contextFragments,
           model: "gemini-1.5-pro",
-          session_id: session_id || crypto.randomUUID()
+          session_id: session_id || crypto.randomUUID(),
+          persona
         }), {
           headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
         });
@@ -138,7 +171,13 @@ If you need to save a memory, append this exact banner to your response:
       }
     }
 
-    return new Response(JSON.stringify({ error: "Not found" }), {
+    return new Response(JSON.stringify({
+      service: "triptych-api",
+      routes: {
+        "GET  /health": "Health check",
+        "POST /api/chat": "Chat with The Triptych (Castor / Pollux / Gem)"
+      }
+    }), {
       status: 404,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
     });
