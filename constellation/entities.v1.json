@@ -99,6 +99,54 @@
       }
     },
     {
+      "entity_id": "mistral",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Mistral",
+      "epithet": "The Brawler",
+      "epithet_aliases": ["le_chat"],
+      "operational_aliases": ["mistral_pro"],
+      "supplemental_source": "mem0",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "mephistopheles",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Mephistopheles",
+      "epithet": "The Adversary",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
+      "entity_id": "gemini",
+      "kind": "agent",
+      "role_tier": "primary",
+      "parent_entity_id": null,
+      "display_name": "Gemini",
+      "epithet": "Gemini",
+      "epithet_aliases": [],
+      "operational_aliases": [],
+      "supplemental_source": "none",
+      "memory": {
+        "shared_write": true,
+        "scoped_write": true,
+        "scoped_read": true
+      }
+    },
+    {
       "entity_id": "the_fuckface",
       "kind": "agent",
       "role_tier": "satellite",
@@ -158,22 +206,6 @@
       "supplemental_source": "none",
       "memory": {
         "shared_write": false,
-        "scoped_write": true,
-        "scoped_read": true
-      }
-    },
-    {
-      "entity_id": "mephistopheles",
-      "kind": "agent",
-      "role_tier": "primary",
-      "parent_entity_id": null,
-      "display_name": "Mephistopheles",
-      "epithet": "The Adversary",
-      "epithet_aliases": [],
-      "operational_aliases": [],
-      "supplemental_source": "none",
-      "memory": {
-        "shared_write": true,
         "scoped_write": true,
         "scoped_read": true
       }
@@ -318,22 +350,6 @@
       "supplemental_source": "none",
       "memory": {
         "shared_write": false,
-        "scoped_write": true,
-        "scoped_read": true
-      }
-    },
-    {
-      "entity_id": "gemini",
-      "kind": "agent",
-      "role_tier": "primary",
-      "parent_entity_id": null,
-      "display_name": "Gemini",
-      "epithet": "Gemini",
-      "epithet_aliases": [],
-      "operational_aliases": [],
-      "supplemental_source": "none",
-      "memory": {
-        "shared_write": true,
         "scoped_write": true,
         "scoped_read": true
       }
