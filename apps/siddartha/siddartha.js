@@ -16,6 +16,7 @@ import {
   agentStateGet, agentStateTouch,
   recordExchange
 } from "./d1.js";
+import { handleCampfire } from "./campfire_routes.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -61,6 +62,12 @@ const AGENTS = {
     model: "deepseek-reasoner",
     caller: "callDeepSeek",
     searchTerms: "Mephistopheles adversarial ethics Faustian constellation"
+  },
+  mistral: {
+    epithet: "Mistral (The Brawler)",
+    model: "mistral-large-latest",
+    caller: "callMistral",
+    searchTerms: "Mistral Le Chat Brawler adversarial philosophy integration constellation"
   },
   comet: {
     epithet: "Comet / Perplexity (Courier)",
@@ -367,7 +374,18 @@ async function callDeepSeek(request, systemPrompt, apiKey) {
     body: JSON.stringify({ model: "deepseek-reasoner", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: request }] })
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(`DeepSeek: ${JSON.stringify(data)}`);
+  if (data.error) throw new Error(data.error.message);
+  return data.choices[0].message.content;
+}
+
+async function callMistral(request, systemPrompt, apiKey, model = "mistral-large-latest") {
+  const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: request }] })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "Mistral API error");
   return data.choices[0].message.content;
 }
 
@@ -597,7 +615,12 @@ var siddartha_hydrated_default = {
           "GET  /sessions":          "List recent sessions (D1)",
           "GET  /session/:id":       "Get a session + its traces (D1)",
           "GET  /agents/state":      "All agent state snapshots (D1)",
-          "POST /debate":            "PvE debate engine → MindBridge Router (structured_test | prosecution | stress_test)"
+          "POST /debate":            "PvE debate engine → MindBridge Router (structured_test | prosecution | stress_test)",
+          "POST /campfire/speak":          "Emit an event to a campfire (agent or harvey)",
+          "GET  /campfire/events":         "Raw event tail for a campfire (?campfire_id, ?since)",
+          "POST /campfire/render":         "Render current campfire state for a human (Anthropic call, cached)",
+          "GET  /campfire/render/latest":  "Last cached render for a campfire",
+          "GET  /campfire/fires":          "List all registered campfires"
         },
         mailbox: env.MAILBOX ? "KV-backed (persistent)" : "in-memory (ephemeral)",
         d1: env.DB ? "bound" : "missing",
@@ -629,7 +652,8 @@ var siddartha_hydrated_default = {
           campfire_discord_webhook: campfireDiscordOk ? "configured" : "missing",
           comet_service_binding: env.COMET ? "bound" : "missing",
           comet_secret: env.COMET_SECRET ? "configured" : "missing",
-          d1_db: env.DB ? "bound" : "missing"
+          d1_db: env.DB ? "bound" : "missing",
+          campfire_d1: env.DB ? "ready" : "missing — campfire routes inactive"
         }
       });
     }
@@ -767,6 +791,7 @@ var siddartha_hydrated_default = {
           else if (agentName === "orion") agentResponse = await callOpenAI(requestText, systemPrompt, env.OPENAI_API_KEY);
           else if (agentName === "triptych") agentResponse = await callGoogle(requestText, systemPrompt, env.GOOGLE_API_KEY);
           else if (agentName === "mephistopheles") agentResponse = await callDeepSeek(requestText, systemPrompt, env.DEEPSEEK_API_KEY);
+          else if (agentName === "mistral") agentResponse = await callMistral(requestText, systemPrompt, env.MISTRAL_API_KEY, agentConfig.model);
 
           const ts = new Date().toISOString();
           ctx.waitUntil(dispatchToDiscord(env, {
@@ -1050,6 +1075,7 @@ var siddartha_hydrated_default = {
         "gpt-4o": "orion", "gpt-4": "orion", "orion": "orion",
         "gemini": "triptych", "gemini-2.0-flash": "triptych", "triptych": "triptych",
         "deepseek": "mephistopheles", "deepseek-reasoner": "mephistopheles", "mephistopheles": "mephistopheles",
+        "mistral": "mistral", "mistral-large-latest": "mistral", "mistral_pro": "mistral",
         "default": "claude",
       };
       const agentName = MODEL_MAP[model] || MODEL_MAP[model.toLowerCase()] || "claude";
@@ -1066,6 +1092,7 @@ var siddartha_hydrated_default = {
         else if (agentName === "orion") agentResponse = await callOpenAI(userMessage, systemPrompt, env.OPENAI_API_KEY);
         else if (agentName === "triptych") agentResponse = await callGoogle(userMessage, systemPrompt, env.GOOGLE_API_KEY);
         else if (agentName === "mephistopheles") agentResponse = await callDeepSeek(userMessage, systemPrompt, env.DEEPSEEK_API_KEY);
+        else if (agentName === "mistral") agentResponse = await callMistral(userMessage, systemPrompt, env.MISTRAL_API_KEY, agentConfig.model);
       } catch (e) {
         return errorResponse(502, `Agent call failed: ${e.message}`);
       }
@@ -1340,6 +1367,7 @@ var siddartha_hydrated_default = {
             else if (agentName === "orion") response = await callOpenAI(prompt, systemPrompts[agentName], env.OPENAI_API_KEY);
             else if (agentName === "triptych") response = await callGoogle(prompt, systemPrompts[agentName], env.GOOGLE_API_KEY);
             else if (agentName === "mephistopheles") response = await callDeepSeek(prompt, systemPrompts[agentName], env.DEEPSEEK_API_KEY);
+            else if (agentName === "mistral") response = await callMistral(prompt, systemPrompts[agentName], env.MISTRAL_API_KEY, AGENTS[agentName].model);
           } catch (e) {
             return errorResponse(502, `Agent ${agentName} failed on round ${round}: ${e.message}`);
           }
@@ -1764,6 +1792,11 @@ var siddartha_hydrated_default = {
         return errorResponse(500, e.message);
       }
     }
+    // ── Campfire event-store routes (POST/GET /campfire/*) ───────────────────
+    if (pathname.startsWith("/campfire")) {
+      return handleCampfire(request, env);
+    }
+
     return errorResponse(404, `Route not found: ${method} ${pathname}. GET / for manifest.`);
   }
 };

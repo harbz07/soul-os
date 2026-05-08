@@ -62,6 +62,41 @@ function Import-DotEnv([string]$path) {
     }
 }
 
+function Test-CloudflareToken([string]$token) {
+    Write-Host "[secrets] Verifying CLOUDFLARE_API_TOKEN..." -ForegroundColor Cyan
+    try {
+        $response = Invoke-RestMethod `
+            -Method Get `
+            -Uri "https://api.cloudflare.com/client/v4/user/tokens/verify" `
+            -Headers @{ "Authorization" = "Bearer $token" }
+
+        if (-not $response.success) {
+            Write-Host "[secrets] Cloudflare token verification failed." -ForegroundColor Red
+            if ($response.errors) {
+                foreach ($err in $response.errors) {
+                    Write-Host ("          - {0}" -f ($err.message ?? ($err | ConvertTo-Json -Compress))) -ForegroundColor Red
+                }
+            }
+            Write-Host "          Ensure token is active and has Workers write scopes for this account." -ForegroundColor Red
+            exit 1
+        }
+
+        $status = $response.result.status
+        if ($status -ne "active") {
+            Write-Host "[secrets] Cloudflare token is not active (status: $status)." -ForegroundColor Red
+            Write-Host "          Rotate/recreate token and try again." -ForegroundColor Red
+            exit 1
+        }
+
+        Write-Host "[secrets] Token verified (active)." -ForegroundColor Green
+    }
+    catch {
+        Write-Host "[secrets] Token verification request failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "          Check internet access and token validity/scope." -ForegroundColor Red
+        exit 1
+    }
+}
+
 function Push-WorkerSecrets {
     param(
         [string]$WorkerName,
@@ -141,17 +176,19 @@ if (-not $env:CLOUDFLARE_API_TOKEN) {
     exit 1
 }
 
+Test-CloudflareToken $env:CLOUDFLARE_API_TOKEN
+
 Push-Location $repoRoot
 try {
     if ($Worker -eq "siddartha" -or $Worker -eq "all") {
-        Push-WorkerSecrets \
-            -WorkerName "siddartha" \
-            -ConfigPath "apps/siddartha/wrangler.toml" \
+        Push-WorkerSecrets `
+            -WorkerName "siddartha" `
+            -ConfigPath "apps/siddartha/wrangler.toml" `
             -Required @(
                 "MEM0_API_KEY",
                 "COMET_SECRET",
                 "OPENAI_API_KEY"
-            ) \
+            ) `
             -Optional @(
                 "NOTION_TOKEN",
                 "NOTION_CAMPFIRE_TALKS_DB_ID",
@@ -160,18 +197,19 @@ try {
                 "ANTHROPIC_API_KEY",
                 "GOOGLE_API_KEY",
                 "DEEPSEEK_API_KEY",
+                "MISTRAL_API_KEY",
                 "MINDBRIDGE_ROUTER_URL",
                 "MINDBRIDGE_API_KEY"
             )
     }
 
     if ($Worker -eq "coleco" -or $Worker -eq "all") {
-        Push-WorkerSecrets \
-            -WorkerName "coleco" \
-            -ConfigPath "apps/coleco/wrangler.toml" \
+        Push-WorkerSecrets `
+            -WorkerName "coleco" `
+            -ConfigPath "apps/coleco/wrangler.toml" `
             -Required @(
                 "MEM0_API_KEY"
-            ) \
+            ) `
             -Optional @(
                 "LETTA_SUPPLEMENTAL_URL",
                 "LETTA_API_KEY",
