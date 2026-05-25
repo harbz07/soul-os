@@ -48,6 +48,11 @@ jobs:
           MINDBRIDGE_API_KEY: ${{ secrets.MINDBRIDGE_API_KEY }}
         run: |
           set -euo pipefail
+          # Skip secret pushes if running in GitHub Actions
+          if [ -n "$GITHUB_ACTIONS" ]; then
+            echo "Skipping secret pushes from Github Actions."
+            exit 0
+          fi
           CONFIG="apps/siddartha/wrangler.toml"
 
           if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
