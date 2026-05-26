@@ -1,5 +1,11 @@
 name: Sync hosted mem0 to local OpenMemory
 
+# NOTE (2026-05-26): Scheduled runs disabled.
+# Reason: LOCAL_OPENMEMORY_URL secret is empty AND a GitHub-hosted runner
+# cannot reach a "local" OpenMemory instance behind NAT anyway. Re-enable
+# the schedule only after deciding where this sync should actually live
+# (local cron / openclaw cron / tunneled endpoint). workflow_dispatch is
+# preserved so manual runs remain possible for testing.
 on:
   workflow_dispatch:
     inputs:
@@ -11,8 +17,6 @@ on:
         description: "Import mode for OpenMemory collisions"
         required: false
         default: "overwrite"
-  schedule:
-    - cron: "25 * * * *"
 
 jobs:
   sync:
