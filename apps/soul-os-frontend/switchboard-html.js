@@ -8,13 +8,14 @@ export const SWITCHBOARD_HTML = `<!DOCTYPE html>
 ██║     ██║   ██║██║   ██║██╔══██╗██║██╔══╝  ██╔══██╗
 ╚██████╗╚██████╔╝╚██████╔╝██║  ██║██║███████╗██║  ██║
  ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝
-        Constellation Switchboard v2 — soul-os.cc
+        Constellation Switchboard v3 — soul-os.cc
 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Constellation Switchboard — soul-os.cc</title>
 <link rel="preconnect" href="https://api.fontshare.com">
 <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=jet-brains-mono@400,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='none' stroke='%234F98A3' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%234F98A3'/><line x1='16' y1='2' x2='16' y2='10' stroke='%234F98A3' stroke-width='1.5'/><line x1='16' y1='22' x2='16' y2='30' stroke='%234F98A3' stroke-width='1.5'/><line x1='2' y1='16' x2='10' y2='16' stroke='%234F98A3' stroke-width='1.5'/><line x1='22' y1='16' x2='30' y2='16' stroke='%234F98A3' stroke-width='1.5'/></svg>">
 <style>
 /* ===== TOKENS ===== */
@@ -36,30 +37,34 @@ export const SWITCHBOARD_HTML = `<!DOCTYPE html>
   --radius-lg: 0.75rem; --radius-xl: 1rem;
   --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  --bg: #0b0e14;
-  --surface: #111520;
-  --surface-2: #161b28;
-  --surface-3: #1c2233;
-  --border: #252d3f;
-  --border-subtle: #1e2536;
-  --text: #c8cdd8;
-  --text-muted: #6b7280;
-  --text-faint: #404858;
-  --cyan: #4fd1c5;
-  --cyan-dim: #2a9d8f;
-  --cyan-glow: rgba(79,209,197,0.12);
-  --amber: #f59e0b;
-  --amber-dim: rgba(245,158,11,0.15);
-  --green: #34d399;
-  --green-dim: rgba(52,211,153,0.15);
-  --red: #f87171;
-  --red-dim: rgba(248,113,113,0.15);
-  --purple: #a78bfa;
-  --purple-dim: rgba(167,139,250,0.12);
-  --blue: #60a5fa;
-  --blue-dim: rgba(96,165,250,0.15);
-  --pink: #f472b6;
-  --pink-dim: rgba(244,114,182,0.15);
+  --bg:            #060810;
+  --bg-deep:       #040609;
+  --surface:       #0d1120;
+  --surface-2:     #131828;
+  --surface-3:     #192035;
+  --border:        #1f2840;
+  --border-subtle: #161e30;
+  --text:          #c8cdd8;
+  --text-muted:    #6b7280;
+  --text-faint:    #3a4255;
+
+  --cyan:        #4fd1c5;
+  --cyan-dim:    #2a9d8f;
+  --cyan-glow:   rgba(79,209,197,0.10);
+  --amber:       #f5c842;
+  --amber-dim:   rgba(245,200,66,0.13);
+  --gold:        #e8b84b;
+  --gold-dim:    rgba(232,184,75,0.12);
+  --green:       #34d399;
+  --green-dim:   rgba(52,211,153,0.13);
+  --red:         #f87171;
+  --red-dim:     rgba(248,113,113,0.13);
+  --purple:      #a78bfa;
+  --purple-dim:  rgba(167,139,250,0.12);
+  --blue:        #60a5fa;
+  --blue-dim:    rgba(96,165,250,0.13);
+  --pink:        #f472b6;
+  --pink-dim:    rgba(244,114,182,0.13);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -73,7 +78,32 @@ body {
   line-height: 1.6;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
 }
+
+/* ===== STARFIELD ===== */
+#starfield {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  animation: twinkle var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: var(--base-opacity, 0.4);
+}
+@keyframes twinkle {
+  0%, 100% { opacity: var(--base-opacity, 0.4); transform: scale(1); }
+  50%       { opacity: 0.05; transform: scale(0.6); }
+}
+.shell { display: flex; flex-direction: column; min-height: 100dvh; position: relative; z-index: 1; }
+
 button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
 a { color: var(--cyan); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -98,16 +128,15 @@ select { font-family: var(--font-body); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
-/* ===== SHELL ===== */
-.shell { display: flex; flex-direction: column; min-height: 100dvh; }
-
 /* ===== TOPBAR ===== */
 .topbar {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-5);
-  background: var(--surface);
+  background: rgba(13,17,32,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
@@ -120,7 +149,7 @@ select { font-family: var(--font-body); }
   gap: var(--space-2);
   flex-shrink: 0;
 }
-.topbar-logo svg { width: 28px; height: 28px; }
+.topbar-logo svg { width: 30px; height: 30px; }
 .topbar-logo-text {
   font-size: var(--text-sm);
   font-weight: 600;
@@ -133,6 +162,13 @@ select { font-family: var(--font-body); }
   color: var(--text-faint);
   font-family: var(--font-mono);
 }
+/* Breathing glow on logo */
+.logo-glyph circle.core { animation: breathe 3.5s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(79,209,197,0.5)); }
+  50%       { filter: drop-shadow(0 0 10px rgba(79,209,197,0.9)); }
+}
+
 .topbar-status {
   display: flex;
   gap: var(--space-3);
@@ -178,6 +214,8 @@ select { font-family: var(--font-body); }
 .btn-sm:hover { border-color: var(--cyan-dim); color: var(--cyan); background: var(--cyan-glow); }
 .btn-sm.primary { background: var(--cyan-dim); color: #fff; border-color: var(--cyan-dim); }
 .btn-sm.primary:hover { background: var(--cyan); }
+.btn-sm.gold { background: var(--gold-dim); color: var(--gold); border-color: var(--gold); }
+.btn-sm.gold:hover { background: var(--gold); color: #000; }
 
 /* ===== TABS ===== */
 .tabs-wrapper {
@@ -185,7 +223,9 @@ select { font-family: var(--font-body); }
   align-items: center;
   gap: 0;
   padding: 0 var(--space-5);
-  background: var(--surface);
+  background: rgba(13,17,32,0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-subtle);
   overflow-x: auto;
   flex-shrink: 0;
@@ -207,6 +247,7 @@ select { font-family: var(--font-body); }
 .tab-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 .tab-btn:hover { color: var(--text); }
 .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.tab-btn.campfire-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
 
 /* ===== CONTENT ===== */
 .content { flex: 1; overflow: hidden; display: flex; }
@@ -312,7 +353,7 @@ select { font-family: var(--font-body); }
 .chat-layout {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 107px); /* topbar + tabs */
+  height: calc(100dvh - 107px);
 }
 .chat-messages {
   flex: 1;
@@ -361,7 +402,46 @@ select { font-family: var(--font-body); }
   font-size: var(--text-sm);
   line-height: 1.65;
   word-break: break-word;
-  white-space: pre-wrap;
+}
+/* Markdown rendering inside bubbles */
+.msg-bubble p { margin-bottom: var(--space-2); }
+.msg-bubble p:last-child { margin-bottom: 0; }
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3 { font-weight: 600; margin-bottom: var(--space-2); color: var(--text); }
+.msg-bubble h1 { font-size: var(--text-lg); }
+.msg-bubble h2 { font-size: var(--text-base); }
+.msg-bubble h3 { font-size: var(--text-sm); }
+.msg-bubble ul,.msg-bubble ol { padding-left: var(--space-5); margin-bottom: var(--space-2); }
+.msg-bubble li { margin-bottom: 2px; }
+.msg-bubble code {
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--cyan);
+}
+.msg-bubble pre {
+  background: var(--bg-deep, #040609);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  overflow-x: auto;
+  margin-bottom: var(--space-2);
+}
+.msg-bubble pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-muted);
+}
+.msg-bubble strong { color: var(--text); }
+.msg-bubble em { color: var(--text-muted); }
+.msg-bubble blockquote {
+  border-left: 3px solid var(--cyan-dim);
+  padding-left: var(--space-3);
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
 }
 .msg.user .msg-bubble {
   background: var(--cyan-glow);
@@ -394,7 +474,9 @@ select { font-family: var(--font-body); }
 
 .chat-footer {
   border-top: 1px solid var(--border-subtle);
-  background: var(--surface);
+  background: rgba(13,17,32,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: var(--space-3) var(--space-5);
   flex-shrink: 0;
 }
@@ -487,8 +569,8 @@ select { font-family: var(--font-body); }
   color: var(--text-muted);
   margin-bottom: 4px;
   display: flex;
+  align-items: center;
   gap: var(--space-2);
-  align-items: baseline;
 }
 .rt-round-badge {
   font-size: 10px;
@@ -505,11 +587,15 @@ select { font-family: var(--font-body); }
   font-size: var(--text-sm);
   line-height: 1.65;
   word-break: break-word;
-  white-space: pre-wrap;
 }
+.rt-text p { margin-bottom: var(--space-2); }
+.rt-text p:last-child { margin-bottom: 0; }
+.rt-text code { background: var(--surface-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1px 5px; font-family: var(--font-mono); font-size: 0.85em; color: var(--cyan); }
 .roundtable-footer {
   border-top: 1px solid var(--border-subtle);
-  background: var(--surface);
+  background: rgba(13,17,32,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: var(--space-4) var(--space-5);
   flex-shrink: 0;
 }
@@ -687,8 +773,6 @@ select { font-family: var(--font-body); }
   margin-top: var(--space-2);
   color: var(--text-faint);
 }
-
-/* mode chips */
 .mode-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
 .mode-chip {
   padding: 5px 14px;
@@ -703,8 +787,6 @@ select { font-family: var(--font-body); }
 }
 .mode-chip:hover { border-color: var(--purple-dim); color: var(--purple); }
 .mode-chip.selected { background: var(--purple-dim); border-color: var(--purple); color: var(--purple); }
-
-/* debate transcript */
 .debate-turn {
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
@@ -858,6 +940,161 @@ select { font-family: var(--font-body); }
   color: var(--text-muted);
 }
 
+/* ===== CAMPFIRE TAB ===== */
+.campfire-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 107px);
+  position: relative;
+}
+.campfire-scene {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+.campfire-render-card {
+  background: linear-gradient(135deg, rgba(13,17,32,0.95) 0%, rgba(25,20,45,0.95) 100%);
+  border: 1px solid rgba(232,184,75,0.2);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+  position: relative;
+  overflow: hidden;
+}
+.campfire-render-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.6;
+}
+.campfire-scene-text {
+  font-size: var(--text-base);
+  color: var(--text);
+  font-style: italic;
+  margin-bottom: var(--space-4);
+  line-height: 1.7;
+}
+.campfire-field {
+  margin-bottom: var(--space-3);
+}
+.campfire-field-label {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+.campfire-field-value {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.campfire-present {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+.campfire-agent-posture {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+}
+.campfire-opening {
+  background: rgba(232,184,75,0.06);
+  border: 1px solid rgba(232,184,75,0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--gold);
+  line-height: 1.6;
+  margin-top: var(--space-4);
+}
+.campfire-events-list {
+  list-style: none;
+  margin-bottom: var(--space-4);
+}
+.campfire-event {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--text-sm);
+}
+.campfire-event:last-child { border-bottom: none; }
+.campfire-event-ts {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  flex-shrink: 0;
+  min-width: 80px;
+}
+.campfire-event-agent {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 70px;
+}
+.campfire-event-content {
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+.campfire-footer {
+  border-top: 1px solid rgba(232,184,75,0.15);
+  background: rgba(13,17,32,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: var(--space-4) var(--space-5);
+  flex-shrink: 0;
+}
+.campfire-composer {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.campfire-fires-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.campfire-fire-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.campfire-fire-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232,184,75,0.4), transparent);
+}
+.campfire-fire-card:hover {
+  border-color: rgba(232,184,75,0.3);
+  background: var(--surface-2);
+}
+.campfire-fire-title { font-weight: 600; margin-bottom: 4px; color: var(--gold); }
+.campfire-fire-id { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-faint); }
+.campfire-fire-ts { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2); }
+
 /* ===== EMPTY STATE ===== */
 .empty-state {
   text-align: center;
@@ -879,7 +1116,7 @@ select { font-family: var(--font-body); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ===== CHIP PILLS FOR EXAMPLE FILLS ===== */
+/* ===== CHIP PILLS ===== */
 .chip-bar { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 .chip {
   font-family: var(--font-mono);
@@ -904,7 +1141,7 @@ select { font-family: var(--font-body); }
   text-align: center;
   font-size: var(--text-xs);
   color: var(--text-faint);
-  background: var(--surface);
+  background: rgba(13,17,32,0.88);
   flex-shrink: 0;
 }
 
@@ -920,15 +1157,16 @@ select { font-family: var(--font-body); }
 </style>
 </head>
 <body>
+<canvas id="starfield"></canvas>
 <div class="shell">
 
 <!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-logo">
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg class="logo-glyph" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="20" cy="20" r="17" stroke="var(--cyan-dim)" stroke-width="1.5" opacity="0.4"/>
       <circle cx="20" cy="20" r="9" stroke="var(--cyan)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
-      <circle cx="20" cy="20" r="3" fill="var(--cyan)"/>
+      <circle class="core" cx="20" cy="20" r="3" fill="var(--cyan)"/>
       <line x1="20" y1="3" x2="20" y2="11" stroke="var(--cyan-dim)" stroke-width="1.2"/>
       <line x1="20" y1="29" x2="20" y2="37" stroke="var(--cyan-dim)" stroke-width="1.2"/>
       <line x1="3" y1="20" x2="11" y2="20" stroke="var(--cyan-dim)" stroke-width="1.2"/>
@@ -940,7 +1178,7 @@ select { font-family: var(--font-body); }
     </svg>
     <div>
       <div class="topbar-logo-text">Constellation Switchboard</div>
-      <div class="topbar-logo-sub">soul-os.cc</div>
+      <div class="topbar-logo-sub">soul-os.cc · v3</div>
     </div>
   </div>
   <div class="topbar-status" id="topbar-status">
@@ -971,6 +1209,10 @@ select { font-family: var(--font-body); }
   <button class="tab-btn" data-tab="roundtable" onclick="switchTab('roundtable')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
     Roundtable
+  </button>
+  <button class="tab-btn campfire-tab" data-tab="campfire" onclick="switchTab('campfire')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M8 14s1.5-2 4-2 4 2 4 2"/><path d="M12 8v2"/></svg>
+    Campfire
   </button>
   <button class="tab-btn" data-tab="mailbox" onclick="switchTab('mailbox')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -1060,16 +1302,14 @@ select { font-family: var(--font-body); }
       </div>
       <div class="roundtable-footer">
         <div class="roundtable-config">
-          <div class="agent-pills" id="rt-agent-pills">
-            <!-- populated by JS -->
-          </div>
+          <div class="agent-pills" id="rt-agent-pills"></div>
           <div class="form-row">
             <div class="form-group grow">
               <label class="form-label">seed</label>
               <input type="text" id="rt-seed" placeholder="What should the constellation chew on?" />
             </div>
             <div class="form-group shrink" style="min-width:80px">
-              <label class="form-label">rounds</label>
+              <label class="form-label">turns</label>
               <input type="number" id="rt-rounds" value="2" min="1" max="10" style="width:80px" />
             </div>
             <div class="form-group shrink" style="min-width:120px">
@@ -1083,6 +1323,130 @@ select { font-family: var(--font-body); }
             <div class="form-group shrink" style="align-self:flex-end">
               <button class="btn-sm primary" onclick="startRoundtable()">Ignite</button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: CAMPFIRE ===== -->
+  <div class="tab-panel" id="panel-campfire">
+    <div class="campfire-layout">
+      <div class="campfire-scene" id="campfire-scene">
+        <h2 class="section-heading" style="color:var(--gold)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5-2 4-2 4 2 4 2"/><path d="M12 8v2"/></svg>
+          Campfire
+        </h2>
+        <p class="section-sub">Multi-agent deliberation layer. Speak into the fire, read the scene.</p>
+
+        <!-- Fire selector -->
+        <div class="card" style="margin-bottom:var(--space-4)">
+          <div class="card-header">
+            <span>Active Fires</span>
+            <div style="display:flex;gap:var(--space-2)">
+              <button class="btn-sm" onclick="loadCampfires()">↻ Refresh</button>
+              <button class="btn-sm gold" onclick="openNewCampfire()">+ New Fire</button>
+            </div>
+          </div>
+          <div id="campfire-fires-body" class="card-body">
+            <div style="color:var(--text-faint);font-size:var(--text-xs)">Click Refresh to load active fires.</div>
+          </div>
+        </div>
+
+        <!-- New campfire form -->
+        <div class="card" id="new-campfire-form" style="display:none;margin-bottom:var(--space-4)">
+          <div class="card-header">
+            <span>Ignite New Fire</span>
+            <button class="btn-sm" onclick="document.getElementById('new-campfire-form').style.display='none'">✕</button>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">campfire id (or leave blank to generate)</label>
+                <input type="text" id="new-campfire-id" placeholder="e.g. council-2025-06" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">title</label>
+                <input type="text" id="new-campfire-title" placeholder="e.g. Polity architecture review" />
+              </div>
+            </div>
+            <button class="btn-sm gold" onclick="createCampfire()">Ignite</button>
+          </div>
+        </div>
+
+        <!-- Scene render -->
+        <div id="campfire-render-area" style="display:none">
+          <div class="campfire-render-card" id="campfire-render-card">
+            <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4)">
+              <span style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--gold)">SCENE</span>
+              <span id="campfire-active-id" style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-faint)"></span>
+              <button class="btn-sm" style="margin-left:auto" onclick="renderCampfire()">↻ Render</button>
+            </div>
+            <div class="campfire-scene-text" id="campfire-scene-text">Loading scene…</div>
+            <div class="campfire-field">
+              <div class="campfire-field-label">Present</div>
+              <div class="campfire-present" id="campfire-present"></div>
+            </div>
+            <div class="campfire-field" id="campfire-holding-wrap">
+              <div class="campfire-field-label">Holding</div>
+              <div class="campfire-field-value" id="campfire-holding"></div>
+            </div>
+            <div class="campfire-field" id="campfire-tension-wrap">
+              <div class="campfire-field-label">Tension</div>
+              <div class="campfire-field-value" id="campfire-tension"></div>
+            </div>
+            <div class="campfire-field" id="campfire-last-move-wrap">
+              <div class="campfire-field-label">Last Move</div>
+              <div class="campfire-field-value" id="campfire-last-move"></div>
+            </div>
+            <div class="campfire-opening" id="campfire-opening"></div>
+          </div>
+
+          <!-- Event stream -->
+          <div class="card">
+            <div class="card-header">
+              <span>Event Stream</span>
+              <button class="btn-sm" onclick="loadCampfireEvents()">↻ Refresh</button>
+            </div>
+            <ul class="campfire-events-list" id="campfire-events-list">
+              <li style="padding:var(--space-3) var(--space-4);color:var(--text-faint);font-size:var(--text-xs)">No events loaded.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campfire speak footer -->
+      <div class="campfire-footer" id="campfire-footer" style="display:none">
+        <div class="campfire-composer">
+          <div class="form-row" style="margin-bottom:var(--space-2)">
+            <div class="form-group shrink" style="min-width:130px">
+              <label class="form-label">speaker</label>
+              <select id="campfire-speaker" style="width:auto">
+                <option value="harvey">harvey</option>
+                <option value="claude">claude</option>
+                <option value="orion">orion</option>
+                <option value="triptych">triptych</option>
+                <option value="mephistopheles">mephistopheles</option>
+                <option value="comet">comet</option>
+              </select>
+            </div>
+            <div class="form-group shrink" style="min-width:130px">
+              <label class="form-label">event type</label>
+              <select id="campfire-event-type" style="width:auto">
+                <option value="speak">speak</option>
+                <option value="reflect">reflect</option>
+                <option value="challenge">challenge</option>
+                <option value="yield">yield</option>
+                <option value="question">question</option>
+                <option value="frame_shift">frame_shift</option>
+              </select>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <textarea id="campfire-input" placeholder="Speak into the fire…" rows="1" oninput="autoResize(this)" onkeydown="campfireKeydown(event)"></textarea>
+            <button class="btn-send" style="background:var(--gold-dim);color:var(--gold)" onclick="speakAtFire()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -1122,12 +1486,9 @@ select { font-family: var(--font-body); }
           <span id="mailbox-card-title">Inbox</span>
           <button class="btn-sm" onclick="ackAllMailbox()" id="ack-all-btn">Ack All</button>
         </div>
-        <div id="mailbox-body">
-          <!-- messages -->
-        </div>
+        <div id="mailbox-body"></div>
       </div>
 
-      <!-- Send Message Form -->
       <div class="card" id="send-message-form" style="display:none;margin-top:var(--space-4)">
         <div class="card-header">
           <span>Send Inter-Agent Message</span>
@@ -1190,7 +1551,6 @@ select { font-family: var(--font-body); }
         <button class="btn-sm primary" onclick="openNewThread()">+ New Thread</button>
       </div>
 
-      <!-- new thread form -->
       <div class="card" id="new-thread-form" style="display:none;margin-bottom:var(--space-4)">
         <div class="card-header">
           <span>Open Thread</span>
@@ -1218,7 +1578,6 @@ select { font-family: var(--font-body); }
         </ul>
       </div>
 
-      <!-- thread detail -->
       <div class="card" id="thread-detail-card" style="display:none;margin-top:var(--space-4)">
         <div class="card-header">
           <span id="thread-detail-title">Thread</span>
@@ -1259,7 +1618,7 @@ select { font-family: var(--font-body); }
       </div>
 
       <div class="graph-legend" id="graph-legend">
-        <div class="graph-legend-item"><span class="legend-dot" style="background:var(--purple)"></span>claude</div>
+        <div class="graph-legend-item"><span class="legend-dot" style="background:var(--purple)"></span>claude · Rostam</div>
         <div class="graph-legend-item"><span class="legend-dot" style="background:var(--blue)"></span>orion</div>
         <div class="graph-legend-item"><span class="legend-dot" style="background:var(--amber)"></span>triptych</div>
         <div class="graph-legend-item"><span class="legend-dot" style="background:var(--red)"></span>mephistopheles</div>
@@ -1284,17 +1643,13 @@ select { font-family: var(--font-body); }
       </h2>
       <p class="section-sub">Structured philosophical debate. Protagonist vs antagonist LLMs via MindBridge routing.</p>
 
-      <!-- Cast -->
       <div class="card" style="margin-bottom:var(--space-4)">
         <div class="card-header">Cast</div>
         <div class="card-body" style="padding-top:var(--space-3)">
-          <div class="samsara-cast" id="samsara-cast">
-            <!-- populated by JS -->
-          </div>
+          <div class="samsara-cast" id="samsara-cast"></div>
         </div>
       </div>
 
-      <!-- Configure debate -->
       <div class="card" style="margin-bottom:var(--space-4)">
         <div class="card-header">Configure Debate</div>
         <div class="card-body">
@@ -1338,17 +1693,14 @@ select { font-family: var(--font-body); }
             <div class="spinner" id="debate-spinner" style="display:none"></div>
           </div>
           <div style="margin-top:var(--space-3);font-size:var(--text-xs);color:var(--text-faint);font-family:var(--font-mono)">
-            MindBridge endpoint: <input type="text" id="mindbridge-url" placeholder="https://your-mindbridge.railway.app" style="display:inline-block;width:auto;min-width:280px;font-size:var(--text-xs);padding:2px 8px;margin-left:var(--space-2)" />
+            MindBridge endpoint: <input type="text" id="mindbridge-url" placeholder="https://your-mindbridge.railway.app" style="display:inline-block;width:auto;min-width:280px;font-size:var(--text-xs);padding:2px 8px;margin-left:var(--space-2)" oninput="saveMindBridgeUrl()" />
           </div>
         </div>
       </div>
 
-      <!-- Debate transcript -->
       <div class="card" id="debate-result-card" style="display:none">
         <div class="card-header" id="debate-result-header">Transcript</div>
-        <div id="debate-transcript-body">
-          <!-- turns -->
-        </div>
+        <div id="debate-transcript-body"></div>
       </div>
     </div>
   </div>
@@ -1393,7 +1745,7 @@ select { font-family: var(--font-body); }
               <textarea id="disp-body" class="dispatch-body-area" rows="6" placeholder='{"userRequest":"@claude:route Hello"}'></textarea>
             </div>
           </div>
-          <div class="chip-bar" id="disp-chips"><!-- populated --></div>
+          <div class="chip-bar" id="disp-chips"></div>
           <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3)">
             <button class="btn-sm primary" onclick="fireDispatch()">Fire</button>
             <button class="btn-sm" onclick="clearDispatch()">Clear</button>
@@ -1421,12 +1773,11 @@ select { font-family: var(--font-body); }
       </h2>
       <p class="section-sub">Topology, route map, agents, and waypoints.</p>
 
-      <!-- topology -->
       <div class="topo-grid" id="topo-grid">
         <div class="node-card" data-node="frontend">
           <div class="node-name"><span class="node-badge badge-cyan">UI</span>Cognitive Runtime</div>
           <div class="node-url">soul-os.cc</div>
-          <div class="node-desc">Hono-based chat UI. D1-backed persistence. Binds API + AI + DB.</div>
+          <div class="node-desc">Cloudflare Worker frontend. D1-backed persistence. Binds API + AI + DB.</div>
           <div class="node-status" id="infra-status-frontend"><span class="status-dot checking"></span><span>checking…</span></div>
         </div>
         <div class="node-card" data-node="api">
@@ -1449,14 +1800,12 @@ select { font-family: var(--font-body); }
         </div>
       </div>
 
-      <!-- route map -->
       <h3 class="section-heading" style="margin-top:var(--space-6)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
         Route Map
       </h3>
       <div id="infra-route-map"></div>
 
-      <!-- agents -->
       <h3 class="section-heading" style="margin-top:var(--space-6)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
         Constellation Agents
@@ -1469,7 +1818,6 @@ select { font-family: var(--font-body); }
         <div class="cast-card"><div class="cast-name" style="color:var(--cyan)">Comet</div><div class="cast-role">The Courier</div><div class="cast-provider">perplexity sonar-pro</div></div>
       </div>
 
-      <!-- waypoints -->
       <h3 class="section-heading">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Waypoints
@@ -1485,12 +1833,61 @@ select { font-family: var(--font-body); }
 </div><!-- /content -->
 
 <footer class="app-footer">
-  soul-os constellation switchboard v2 &nbsp;·&nbsp;
+  soul-os constellation switchboard v3 &nbsp;·&nbsp; Function ≠ Value &nbsp;·&nbsp;
   <a href="https://github.com/harbz07/soul-os" target="_blank" rel="noopener noreferrer">github</a>
 </footer>
 </div><!-- /shell -->
 
 <script>
+// ===================================================================
+// STARFIELD
+// ===================================================================
+(function() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initStars(n) {
+    stars = [];
+    for (let i = 0; i < n; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.2 + 0.2,
+        baseAlpha: Math.random() * 0.5 + 0.1,
+        alpha: 0,
+        speed: Math.random() * 0.003 + 0.001,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    frame += 0.008;
+    stars.forEach(s => {
+      s.alpha = s.baseAlpha * (0.5 + 0.5 * Math.sin(frame * s.speed * 100 + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = \`rgba(255,255,255,\${s.alpha})\`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); initStars(220); });
+  resize();
+  initStars(220);
+  draw();
+})();
+
 // ===================================================================
 // CONFIG
 // ===================================================================
@@ -1501,11 +1898,12 @@ const API = {
 };
 
 const AGENT_META = {
-  claude:           { label: 'Rostam',        color: 'var(--purple)', bg: 'var(--purple-dim)', abbr: 'RS' },
-  orion:            { label: 'Orion',          color: 'var(--blue)',   bg: 'var(--blue-dim)',   abbr: 'OR' },
-  triptych:         { label: 'Triptych',       color: 'var(--amber)',  bg: 'var(--amber-dim)',  abbr: 'TR' },
-  mephistopheles:   { label: 'Mephisto',       color: 'var(--red)',    bg: 'var(--red-dim)',    abbr: 'ME' },
-  comet:            { label: 'Comet',          color: 'var(--cyan)',   bg: 'var(--cyan-glow)',  abbr: 'CO' },
+  claude:         { label: 'Rostam',        color: 'var(--purple)', bg: 'var(--purple-dim)', abbr: 'RS' },
+  orion:          { label: 'Orion',          color: 'var(--blue)',   bg: 'var(--blue-dim)',   abbr: 'OR' },
+  triptych:       { label: 'Triptych',       color: 'var(--amber)',  bg: 'var(--amber-dim)',  abbr: 'TR' },
+  mephistopheles: { label: 'Mephisto',       color: 'var(--red)',    bg: 'var(--red-dim)',    abbr: 'ME' },
+  comet:          { label: 'Comet',          color: 'var(--cyan)',   bg: 'var(--cyan-glow)',  abbr: 'CO' },
+  harvey:         { label: 'Harvey',         color: 'var(--gold)',   bg: 'var(--gold-dim)',   abbr: 'HV' },
 };
 
 const SAMSARA_CAST = [
@@ -1539,12 +1937,43 @@ const ROUTES = {
     { method: 'GET',  path: '/agents/state',        desc: 'All agent state snapshots' },
   ],
   mailbox: [
-    { method: 'GET',    path: '/mailbox/:agent',        desc: 'Pull messages' },
-    { method: 'POST',   path: '/mailbox/:agent/ack',    desc: 'Acknowledge message' },
-    { method: 'POST',   path: '/mailbox/:agent/clear',  desc: 'Clear inbox' },
-    { method: 'POST',   path: '/reply',                 desc: 'Reply to message' },
+    { method: 'GET',  path: '/mailbox/:agent',       desc: 'Pull messages' },
+    { method: 'POST', path: '/mailbox/:agent/ack',   desc: 'Acknowledge message' },
+    { method: 'POST', path: '/mailbox/:agent/clear', desc: 'Clear inbox' },
+    { method: 'POST', path: '/reply',                desc: 'Reply to message' },
+  ],
+  campfire: [
+    { method: 'POST', path: '/campfire/speak',          desc: 'Append event to fire' },
+    { method: 'GET',  path: '/campfire/events',         desc: 'Raw event tail' },
+    { method: 'POST', path: '/campfire/render',         desc: 'Invoke scene renderer' },
+    { method: 'GET',  path: '/campfire/render/latest',  desc: 'Last cached render' },
+    { method: 'GET',  path: '/campfire/fires',          desc: 'List active fires' },
   ],
 };
+
+// ===================================================================
+// MARKDOWN HELPER
+// ===================================================================
+function renderMd(text) {
+  if (typeof marked !== 'undefined') {
+    try {
+      return marked.parse(text, { breaks: true, gfm: true });
+    } catch(e) { /* fall through */ }
+  }
+  return escHtml(text).replace(/\\n/g, '<br>');
+}
+
+// ===================================================================
+// ESCAPE HELPERS
+// ===================================================================
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+function escAttr(s) { return escHtml(s); }
 
 // ===================================================================
 // TAB SWITCHING
@@ -1563,14 +1992,12 @@ async function probeAll() {
     { key: 'api',        url: API.api        + '/health',     pillId: 'pill-api',        infraId: 'infra-status-api' },
     { key: 'siddhartha', url: API.siddhartha + '/health',     pillId: 'pill-siddhartha', infraId: 'infra-status-siddhartha' },
   ];
-
   checks.forEach(c => {
     const pill = document.getElementById(c.pillId);
     const infra = document.getElementById(c.infraId);
-    if (pill) pill.innerHTML = '<span class="status-dot checking"></span><span>' + c.key + '</span>';
+    if (pill)  pill.innerHTML  = '<span class="status-dot checking"></span><span>' + c.key + '</span>';
     if (infra) infra.innerHTML = '<span class="status-dot checking"></span><span>checking…</span>';
   });
-
   await Promise.all(checks.map(async c => {
     const pill  = document.getElementById(c.pillId);
     const infra = document.getElementById(c.infraId);
@@ -1579,8 +2006,8 @@ async function probeAll() {
       const res = await fetch(c.url, { signal: AbortSignal.timeout(8000) });
       const ms  = Math.round(performance.now() - t0);
       const ok  = res.ok;
-      if (pill)  pill.innerHTML  = '<span class="status-dot ' + (ok?'online':'offline') + '"></span><span style="color:var(--' + (ok?'green':'red') + ')">' + (ok ? ms+'ms' : res.status) + '</span>';
-      if (infra) infra.innerHTML = '<span class="status-dot ' + (ok?'online':'offline') + '"></span><span style="color:var(--' + (ok?'green':'red') + ')">' + (ok ? ms+'ms' : res.status) + '</span>';
+      if (pill)  pill.innerHTML  = '<span class="status-dot '+(ok?'online':'offline')+'"></span><span style="color:var(--'+(ok?'green':'red')+')">'+( ok ? ms+'ms' : res.status)+'</span>';
+      if (infra) infra.innerHTML = '<span class="status-dot '+(ok?'online':'offline')+'"></span><span style="color:var(--'+(ok?'green':'red')+')">'+( ok ? ms+'ms' : res.status)+'</span>';
     } catch {
       if (pill)  pill.innerHTML  = '<span class="status-dot offline"></span><span style="color:var(--red)">unreachable</span>';
       if (infra) infra.innerHTML = '<span class="status-dot offline"></span><span style="color:var(--red)">unreachable</span>';
@@ -1618,11 +2045,11 @@ function appendChatMsg(role, agentName, text, meta) {
   const div = document.createElement('div');
   div.className = 'msg ' + role;
   div.innerHTML =
-    '<div class="msg-avatar" style="background:' + (role==='user'?'var(--surface-3)':'var(--surface)') + ';color:' + color + ';border:1px solid var(--border-subtle)">' + abbr + '</div>' +
+    '<div class="msg-avatar" style="background:'+(role==='user'?'var(--surface-3)':'var(--surface)')+';color:'+color+';border:1px solid var(--border-subtle)">'+abbr+'</div>' +
     '<div class="msg-body">' +
-      '<div class="msg-agent">' + escHtml(label) + (meta ? ' <span style="color:var(--text-faint)">· '+escHtml(meta)+'</span>' : '') + '</div>' +
-      '<div class="msg-bubble">' + escHtml(text) + '</div>' +
-      '<div class="msg-meta">' + new Date().toLocaleTimeString() + '</div>' +
+      '<div class="msg-agent">'+escHtml(label)+(meta ? ' <span style="color:var(--text-faint)">· '+escHtml(meta)+'</span>' : '')+'</div>' +
+      '<div class="msg-bubble">'+(role === 'user' ? escHtml(text).replace(/\\n/g,'<br>') : renderMd(text))+'</div>' +
+      '<div class="msg-meta">'+new Date().toLocaleTimeString()+'</div>' +
     '</div>';
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
@@ -1635,9 +2062,9 @@ function appendThinking(agentName) {
   div.className = 'msg assistant';
   div.id = 'thinking-bubble';
   div.innerHTML =
-    '<div class="msg-avatar" style="background:var(--surface);color:' + agentColor(agentName) + ';border:1px solid var(--border-subtle)">' + agentAbbr(agentName) + '</div>' +
+    '<div class="msg-avatar" style="background:var(--surface);color:'+agentColor(agentName)+';border:1px solid var(--border-subtle)">'+agentAbbr(agentName)+'</div>' +
     '<div class="msg-body">' +
-      '<div class="msg-agent">' + escHtml(agentLabel(agentName)) + '</div>' +
+      '<div class="msg-agent">'+escHtml(agentLabel(agentName))+'</div>' +
       '<div class="msg-bubble thinking"><div class="thinking-dots"><span></span><span></span><span></span></div></div>' +
     '</div>';
   container.appendChild(div);
@@ -1672,7 +2099,6 @@ async function sendChat() {
     });
     const data = await res.json();
     thinking.remove();
-
     const reply = data.response || data.content || data.reply || data.message || JSON.stringify(data, null, 2);
     const metaStr = data.model ? data.model : '';
     appendChatMsg('assistant', agent, reply, metaStr);
@@ -1697,16 +2123,16 @@ function initRTPills() {
   container.innerHTML = available.map(a => {
     const m = AGENT_META[a];
     const sel = rtSelectedAgents.includes(a);
-    return '<div class="agent-pill ' + (sel?'selected':'') + '" data-agent="' + a + '" ' +
+    return '<div class="agent-pill '+(sel?'selected':'')+'" data-agent="'+a+'" ' +
       'style="color:'+m.color+';border-color:'+(sel?m.color:'var(--border)')+';background:'+(sel?m.bg:'transparent')+'" ' +
       'onclick="toggleRTAgent(this)">' +
-      '<span class="dot" style="background:'+m.color+'"></span>' + escHtml(m.label) + '</div>';
+      '<span class="dot" style="background:'+m.color+'"></span>'+escHtml(m.label)+'</div>';
   }).join('');
 }
 
 function toggleRTAgent(el) {
   const agent = el.dataset.agent;
-  const m     = AGENT_META[agent];
+  const m = AGENT_META[agent];
   if (rtSelectedAgents.includes(agent)) {
     if (rtSelectedAgents.length <= 2) return;
     rtSelectedAgents = rtSelectedAgents.filter(a => a !== agent);
@@ -1723,7 +2149,7 @@ function toggleRTAgent(el) {
 
 async function startRoundtable() {
   const seed   = document.getElementById('rt-seed').value.trim();
-  const rounds = parseInt(document.getElementById('rt-rounds').value) || 2;
+  const turns  = parseInt(document.getElementById('rt-rounds').value) || 2;
   const mode   = document.getElementById('rt-mode').value;
   if (!seed) { alert('Enter a seed topic.'); return; }
 
@@ -1733,13 +2159,7 @@ async function startRoundtable() {
 
   transcript.innerHTML = '<div style="padding:var(--space-4);text-align:center"><span class="spinner"></span> <span style="color:var(--text-muted);font-size:var(--text-xs);font-family:var(--font-mono)">Igniting roundtable…</span></div>';
 
-  const body = {
-    agents:  rtSelectedAgents,
-    seed,
-    rounds,
-    mode,
-    initiative: 'contextual_weighted_each_round',
-  };
+  const body = { agents: rtSelectedAgents, seed, turns, mode, initiative: 'contextual_weighted_each_round' };
 
   try {
     const res  = await fetch(API.api + '/converse', {
@@ -1760,10 +2180,10 @@ async function startRoundtable() {
           '<div class="rt-body">' +
             '<div class="rt-header">' +
               '<span style="color:'+(m.color||'var(--text)')+'">'+escHtml(m.label||turn.agent)+'</span>' +
-              '<span class="rt-round-badge">round '+turn.round+'</span>' +
+              '<span class="rt-round-badge">turn '+(turn.round||turn.turn||'?')+'</span>' +
               (turn.model ? '<span style="color:var(--text-faint)">'+escHtml(turn.model)+'</span>' : '') +
             '</div>' +
-            '<div class="rt-text">'+escHtml(turn.response||turn.text||'')+'</div>' +
+            '<div class="rt-text">'+renderMd(turn.response||turn.text||'')+'</div>' +
           '</div>';
         transcript.appendChild(div);
       });
@@ -1775,7 +2195,150 @@ async function startRoundtable() {
     }
     transcript.scrollTop = transcript.scrollHeight;
   } catch (e) {
-    transcript.innerHTML = '<div style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: ' + escHtml(e.message) + '</div>';
+    transcript.innerHTML = '<div style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</div>';
+  }
+}
+
+// ===================================================================
+// CAMPFIRE
+// ===================================================================
+let activeCampfireId = null;
+
+function openNewCampfire() {
+  const f = document.getElementById('new-campfire-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadCampfires() {
+  const body = document.getElementById('campfire-fires-body');
+  body.innerHTML = '<span class="spinner"></span>';
+  try {
+    const res  = await fetch(API.siddhartha + '/campfire/fires');
+    const data = await res.json();
+    const fires = data.campfires || [];
+    if (!fires.length) {
+      body.innerHTML = '<div style="color:var(--text-faint);font-size:var(--text-xs);padding:var(--space-2)">No active fires. Ignite one above.</div>';
+      return;
+    }
+    body.innerHTML = '<div class="campfire-fires-list">' +
+      fires.map(f =>
+        '<div class="campfire-fire-card" onclick="selectCampfire(\\''+escAttr(f.campfire_id)+'\\')">' +
+          '<div class="campfire-fire-title">'+escHtml(f.title||'Untitled Fire')+'</div>' +
+          '<div class="campfire-fire-id">'+escHtml(f.campfire_id)+'</div>' +
+          '<div class="campfire-fire-ts">last event: '+(f.last_event_at ? new Date(f.last_event_at).toLocaleString() : 'never')+'</div>' +
+        '</div>'
+      ).join('') + '</div>';
+  } catch (e) {
+    body.innerHTML = '<div style="color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</div>';
+  }
+}
+
+async function createCampfire() {
+  const id    = document.getElementById('new-campfire-id').value.trim() || ('fire-' + Date.now());
+  const title = document.getElementById('new-campfire-title').value.trim() || 'Untitled Fire';
+  try {
+    await fetch(API.siddhartha + '/campfire/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campfire_id: id, campfire_title: title, agent_id: 'harvey', event_type: 'ignite', content: 'Fire started: ' + title }),
+    });
+    document.getElementById('new-campfire-form').style.display = 'none';
+    await loadCampfires();
+    selectCampfire(id);
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+function selectCampfire
+(id) {
+  activeCampfireId = id;
+  document.getElementById('campfire-active-id').textContent = id;
+  document.getElementById('campfire-render-area').style.display = 'block';
+  document.getElementById('campfire-footer').style.display = 'block';
+  renderCampfire();
+  loadCampfireEvents();
+}
+
+async function renderCampfire() {
+  if (!activeCampfireId) return;
+  document.getElementById('campfire-scene-text').textContent = 'Rendering…';
+  try {
+    const res  = await fetch(API.siddhartha + '/campfire/render', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campfire_id: activeCampfireId }),
+    });
+    const data = await res.json();
+    if (data.error) { document.getElementById('campfire-scene-text').textContent = data.error; return; }
+    document.getElementById('campfire-scene-text').textContent = data.scene || 'No scene.';
+    const present = Array.isArray(data.present) ? data.present : (typeof data.present === 'string' ? JSON.parse(data.present||'[]') : []);
+    document.getElementById('campfire-present').innerHTML = present.map(p => {
+      const m = AGENT_META[p.agent] || {};
+      return '<span class="campfire-agent-posture" style="color:'+(m.color||'var(--text)')+';border-color:'+(m.color||'var(--border)')+'">'+escHtml(m.label||p.agent)+' <span style="color:var(--text-faint)">'+escHtml(p.posture||'')+'</span></span>';
+    }).join('');
+    const setField = (id, wrapId, val) => {
+      const el = document.getElementById(id);
+      const wrap = document.getElementById(wrapId);
+      if (val) { el.textContent = val; wrap.style.display = 'block'; }
+      else { wrap.style.display = 'none'; }
+    };
+    setField('campfire-holding',   'campfire-holding-wrap',   data.holding   ? (typeof data.holding === 'object' ? JSON.stringify(data.holding) : data.holding) : null);
+    setField('campfire-tension',   'campfire-tension-wrap',   data.tension);
+    setField('campfire-last-move', 'campfire-last-move-wrap', data.last_move);
+    document.getElementById('campfire-opening').textContent = data.opening || '';
+  } catch (e) {
+    document.getElementById('campfire-scene-text').textContent = 'Render error: ' + e.message;
+  }
+}
+
+async function loadCampfireEvents() {
+  if (!activeCampfireId) return;
+  const list = document.getElementById('campfire-events-list');
+  list.innerHTML = '<li style="padding:var(--space-3) var(--space-4);color:var(--text-faint);font-size:var(--text-xs)"><span class="spinner"></span></li>';
+  try {
+    const res  = await fetch(API.siddhartha + '/campfire/events?campfire_id=' + encodeURIComponent(activeCampfireId));
+    const data = await res.json();
+    const events = data.events || [];
+    if (!events.length) {
+      list.innerHTML = '<li style="padding:var(--space-3) var(--space-4);color:var(--text-faint);font-size:var(--text-xs)">No events yet.</li>';
+      return;
+    }
+    list.innerHTML = events.map(ev => {
+      const m = AGENT_META[ev.agent_id] || {};
+      return '<li class="campfire-event">' +
+        '<span class="campfire-event-ts">'+(ev.ts ? new Date(ev.ts).toLocaleTimeString() : '')+'</span>' +
+        '<span class="campfire-event-agent" style="color:'+(m.color||'var(--text)')+'">'+escHtml(m.label||ev.agent_id)+'</span>' +
+        '<span class="campfire-event-content"><span style="color:var(--text-faint);font-family:var(--font-mono);font-size:10px">'+escHtml(ev.event_type)+'</span> '+escHtml(ev.content||'')+'</span>' +
+      '</li>';
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<li style="padding:var(--space-3) var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</li>';
+  }
+}
+
+function campfireKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); speakAtFire(); }
+}
+
+async function speakAtFire() {
+  if (!activeCampfireId) { alert('Select a campfire first.'); return; }
+  const input     = document.getElementById('campfire-input');
+  const agentId   = document.getElementById('campfire-speaker').value;
+  const eventType = document.getElementById('campfire-event-type').value;
+  const content   = input.value.trim();
+  if (!content) return;
+  input.value = '';
+  input.style.height = 'auto';
+  try {
+    await fetch(API.siddhartha + '/campfire/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campfire_id: activeCampfireId, agent_id: agentId, event_type: eventType, content }),
+    });
+    await loadCampfireEvents();
+  } catch (e) {
+    alert('Speak error: ' + e.message);
   }
 }
 
@@ -1787,36 +2350,32 @@ async function pullMailbox() {
   const card  = document.getElementById('mailbox-messages-card');
   const body  = document.getElementById('mailbox-body');
   const title = document.getElementById('mailbox-card-title');
-
   card.style.display = 'block';
   title.textContent  = 'Inbox: ' + agent;
   body.innerHTML     = '<div style="padding:var(--space-4);text-align:center"><span class="spinner"></span></div>';
-
   try {
     const res  = await fetch(API.siddhartha + '/mailbox/' + agent);
     const data = await res.json();
     const msgs = data.messages || data || [];
-
     if (!msgs.length) {
       body.innerHTML = '<div style="padding:var(--space-4);text-align:center;color:var(--text-faint);font-size:var(--text-xs)">Inbox empty.</div>';
       return;
     }
-
     body.innerHTML = msgs.map(m =>
       '<div class="mailbox-msg">' +
         '<div class="mailbox-msg-header">' +
           (m.read === false ? '<span class="unread-dot"></span>' : '') +
-          '<span class="mailbox-from">' + escHtml(m.from||'?') + '</span>' +
-          ' → <span>' + escHtml(m.to||agent) + '</span>' +
-          '<span class="mailbox-intent">' + escHtml(m.intent||'') + '</span>' +
-          '<span class="mailbox-ts">' + (m.timestamp ? new Date(m.timestamp).toLocaleString() : '') + '</span>' +
+          '<span class="mailbox-from">'+escHtml(m.from||'?')+'</span>' +
+          ' → <span>'+escHtml(m.to||agent)+'</span>' +
+          '<span class="mailbox-intent">'+escHtml(m.intent||'')+'</span>' +
+          '<span class="mailbox-ts">'+(m.timestamp ? new Date(m.timestamp).toLocaleString() : '')+'</span>' +
         '</div>' +
-        '<div class="mailbox-body-text">' + escHtml(typeof m.body === 'object' ? JSON.stringify(m.body) : (m.body||'')) + '</div>' +
-        (m.msg_id ? '<div style="font-size:10px;font-family:var(--font-mono);color:var(--text-faint);margin-top:4px">' + escHtml(m.msg_id) + '</div>' : '') +
+        '<div class="mailbox-body-text">'+escHtml(typeof m.body === 'object' ? JSON.stringify(m.body) : (m.body||''))+'</div>' +
+        (m.msg_id ? '<div style="font-size:10px;font-family:var(--font-mono);color:var(--text-faint);margin-top:4px">'+escHtml(m.msg_id)+'</div>' : '') +
       '</div>'
     ).join('');
   } catch (e) {
-    body.innerHTML = '<div style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: ' + escHtml(e.message) + '</div>';
+    body.innerHTML = '<div style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</div>';
   }
 }
 
@@ -1831,17 +2390,13 @@ async function sendMessage() {
   const intent = document.getElementById('msg-intent').value.trim() || 'handoff';
   const body   = document.getElementById('msg-body-text').value.trim();
   const res_el = document.getElementById('msg-result');
-
   if (!body) { alert('Enter a message body.'); return; }
-
   res_el.style.display = 'block';
   res_el.textContent   = 'Sending…';
-
   try {
     const res  = await fetch(API.api + '/message', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ from, to, intent, body }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to, intent, body }),
     });
     const data = await res.json();
     res_el.textContent = JSON.stringify(data, null, 2);
@@ -1871,32 +2426,26 @@ async function loadThreads() {
   const spinner = document.getElementById('threads-spinner');
   const title   = document.getElementById('threads-card-title');
   spinner.style.display = 'inline-block';
-
   try {
     const res  = await fetch(API.siddhartha + '/threads');
     const data = await res.json();
     const threads = data.threads || data || [];
     title.textContent = 'Threads (' + threads.length + ')';
     spinner.style.display = 'none';
-
     if (!threads.length) {
       list.innerHTML = '<li style="padding:var(--space-4);text-align:center;color:var(--text-faint);font-size:var(--text-xs)">No threads yet.</li>';
       return;
     }
-
     list.innerHTML = threads.map(t =>
-      '<li class="thread-item" onclick="loadThreadDetail(\'' + escAttr(t.id||t.thread_id) + '\')">' +
-        '<div class="thread-id">' + escHtml((t.id||t.thread_id||'').slice(0,20)) + '…</div>' +
-        '<div class="thread-info">' +
-          '<div class="thread-name">' + escHtml(t.name || 'Unnamed thread') + '</div>' +
-          '<div class="thread-participants">' + escHtml(t.participants || '') + '</div>' +
-        '</div>' +
-        '<div class="thread-badge">' + escHtml(t.status || 'open') + '</div>' +
+      '<li class="thread-item" onclick="loadThreadDetail(\\''+escAttr(t.id||t.thread_id)+'\\')">' +
+        '<div class="thread-id">'+escHtml((t.id||t.thread_id||'').slice(0,20))+'…</div>' +
+        '<div class="thread-info"><div class="thread-name">'+escHtml(t.name||'Unnamed thread')+'</div><div class="thread-participants">'+escHtml(t.participants||'')+'</div></div>' +
+        '<div class="thread-badge">'+escHtml(t.status||'open')+'</div>' +
       '</li>'
     ).join('');
   } catch (e) {
     spinner.style.display = 'none';
-    list.innerHTML = '<li style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: ' + escHtml(e.message) + '</li>';
+    list.innerHTML = '<li style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</li>';
   }
 }
 
@@ -1908,37 +2457,31 @@ async function loadThreadDetail(id) {
   title.textContent  = 'Thread: ' + id.slice(0,16) + '…';
   body.innerHTML     = '<span class="spinner"></span>';
   card.scrollIntoView({ behavior: 'smooth' });
-
   try {
     const res  = await fetch(API.siddhartha + '/thread/' + id);
     const data = await res.json();
-
-    let html = '<div style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-3)">' +
-      'id: ' + escHtml(data.id||id) + ' · status: ' + escHtml(data.status||'?') + ' · turns: ' + (data.turn_count||0) +
-      '</div>';
-
-    const traces = data.traces || [];
+    const thread = data.thread || data;
+    let html = '<div style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-3)">id: '+escHtml(thread.id||id)+' · status: '+escHtml(thread.status||'?')+' · turns: '+(thread.turn_count||0)+'</div>';
+    const traces = data.traces || thread.traces || [];
     if (traces.length) {
-      html += '<div style="margin-bottom:var(--space-2);font-size:var(--text-xs);font-family:var(--font-mono);color:var(--text-faint)">' + traces.length + ' traces</div>';
+      html += '<div style="margin-bottom:var(--space-2);font-size:var(--text-xs);font-family:var(--font-mono);color:var(--text-faint)">'+traces.length+' traces</div>';
       traces.forEach(tr => {
         const m = AGENT_META[tr.agent] || {};
-        html +=
-          '<div style="padding:var(--space-2) 0;border-bottom:1px solid var(--border-subtle)">' +
-            '<div style="display:flex;gap:var(--space-2);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-muted);margin-bottom:4px">' +
-              '<span style="color:'+(m.color||'var(--text)')+'">'+escHtml(tr.agent||'?')+'</span>' +
-              '<span>round '+tr.round+'</span>' +
-              (tr.model ? '<span style="color:var(--text-faint)">'+escHtml(tr.model)+'</span>' : '') +
-            '</div>' +
-            '<div style="font-size:var(--text-xs);color:var(--text-muted);line-height:1.6;white-space:pre-wrap">' + escHtml((tr.response||'').slice(0,400)) + (tr.response && tr.response.length > 400 ? '…' : '') + '</div>' +
-          '</div>';
+        html += '<div style="padding:var(--space-2) 0;border-bottom:1px solid var(--border-subtle)">' +
+          '<div style="display:flex;gap:var(--space-2);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-muted);margin-bottom:4px">' +
+            '<span style="color:'+(m.color||'var(--text)')+'">'+escHtml(tr.agent||'?')+'</span>' +
+            '<span>turn '+(tr.round||tr.turn||'?')+'</span>' +
+            (tr.model ? '<span style="color:var(--text-faint)">'+escHtml(tr.model)+'</span>' : '') +
+          '</div>' +
+          '<div style="font-size:var(--text-xs);color:var(--text-muted);line-height:1.6;white-space:pre-wrap">'+escHtml((tr.response||'').slice(0,400))+(tr.response && tr.response.length > 400 ? '…' : '')+'</div>' +
+        '</div>';
       });
     } else {
       html += '<div style="color:var(--text-faint);font-size:var(--text-xs)">No traces yet.</div>';
     }
-
     body.innerHTML = html;
   } catch (e) {
-    body.innerHTML = '<span style="color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: ' + escHtml(e.message) + '</span>';
+    body.innerHTML = '<span style="color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</span>';
   }
 }
 
@@ -1949,9 +2492,8 @@ async function createThread() {
   res_el.textContent   = 'Creating…';
   try {
     const res  = await fetch(API.siddhartha + '/thread', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ name: name || undefined }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name || undefined }),
     });
     const data = await res.json();
     res_el.textContent = JSON.stringify(data, null, 2);
@@ -1970,11 +2512,9 @@ async function loadGraph() {
   const agentSel = document.getElementById('graph-agent-select').value;
   const ph       = document.getElementById('graph-placeholder');
   ph.textContent = 'Loading…';
-
   const url = agentSel
     ? API.siddhartha + '/graph/' + agentSel
     : API.siddhartha + '/agents/state';
-
   try {
     const res  = await fetch(url);
     graphData  = await res.json();
@@ -1991,35 +2531,26 @@ function drawGraph(data, focusAgent) {
   const wrap    = document.getElementById('graph-canvas-wrap');
   canvas.width  = wrap.clientWidth;
   canvas.height = 420;
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Build node + edge sets from response
   const nodeMap = {};
   const edges   = [];
-
-  // edges might be under data.edges or data.graph or top-level array
   const rawEdges = data.edges || data.graph || (Array.isArray(data) ? data : []);
-
   rawEdges.forEach(e => {
     const from = e.from_agent || e.from || e.source;
     const to   = e.to_agent   || e.to   || e.target;
     if (from && to) {
-      nodeMap[from] = true;
-      nodeMap[to]   = true;
+      nodeMap[from] = true; nodeMap[to] = true;
       edges.push({ from, to, weight: e.weight || e.count || 1, intent: e.intent || '' });
     }
   });
-
-  // also add agents from state
-  const agents = Object.keys(AGENT_META);
-  agents.forEach(a => { nodeMap[a] = true; });
+  Object.keys(AGENT_META).forEach(a => { nodeMap[a] = true; });
 
   const nodes = Object.keys(nodeMap);
   const total = nodes.length;
-  const cx    = canvas.width / 2;
-  const cy    = canvas.height / 2;
-  const r     = Math.min(cx, cy) - 60;
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r  = Math.min(cx, cy) - 60;
 
   const pos = {};
   nodes.forEach((n, i) => {
@@ -2027,79 +2558,42 @@ function drawGraph(data, focusAgent) {
     pos[n] = { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
   });
 
-  // Draw edges
+  const colorMap = { purple: '#a78bfa', blue: '#60a5fa', amber: '#f5c842', red: '#f87171', cyan: '#4fd1c5', green: '#34d399', gold: '#e8b84b', border: '#1f2840' };
+  function resolveColor(varStr) {
+    const key = Object.keys(colorMap).find(k => (varStr||'').includes(k));
+    return colorMap[key] || '#1f2840';
+  }
+
   edges.forEach(e => {
-    const from = pos[e.from];
-    const to   = pos[e.to];
+    const from = pos[e.from]; const to = pos[e.to];
     if (!from || !to) return;
     const meta = AGENT_META[e.from] || {};
+    const col  = resolveColor(meta.color);
     const w    = Math.min(1 + e.weight * 0.5, 4);
-
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-    ctx.strokeStyle = (meta.color || 'var(--border)').replace('var(--', '').replace(')', '');
-
-    // resolve CSS vars manually
-    const colorMap = {
-      purple: '#a78bfa', blue: '#60a5fa', amber: '#f59e0b',
-      red: '#f87171', cyan: '#4fd1c5', green: '#34d399',
-      border: '#252d3f',
-    };
-    ctx.strokeStyle = colorMap[Object.keys(colorMap).find(k => (meta.color||'').includes(k))] || '#252d3f';
-    ctx.globalAlpha = 0.5;
-    ctx.lineWidth   = w;
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
+    ctx.strokeStyle = col; ctx.globalAlpha = 0.45; ctx.lineWidth = w; ctx.stroke();
     ctx.globalAlpha = 1;
-
-    // arrowhead
-    const dx   = to.x - from.x;
-    const dy   = to.y - from.y;
-    const len  = Math.sqrt(dx*dx + dy*dy);
-    const nx   = dx/len;
-    const ny   = dy/len;
-    const nr   = 16; // node radius offset
-    const ax   = to.x - nx*nr;
-    const ay   = to.y - ny*nr;
-    const aw   = 6;
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
+    const dx = to.x - from.x; const dy = to.y - from.y;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const nx = dx/len; const ny = dy/len; const nr = 16;
+    const ax = to.x - nx*nr; const ay = to.y - ny*nr; const aw = 6;
+    ctx.beginPath(); ctx.moveTo(ax, ay);
     ctx.lineTo(ax - nx*8 - ny*aw, ay - ny*8 + nx*aw);
     ctx.lineTo(ax - nx*8 + ny*aw, ay - ny*8 - nx*aw);
-    ctx.closePath();
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.globalAlpha = 0.6;
-    ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.closePath(); ctx.fillStyle = col; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
   });
 
-  // Draw nodes
   nodes.forEach(n => {
-    const p    = pos[n];
-    const meta = AGENT_META[n] || {};
-    const colorMap = {
-      purple: '#a78bfa', blue: '#60a5fa', amber: '#f59e0b',
-      red: '#f87171', cyan: '#4fd1c5', green: '#34d399',
-    };
-    const col  = colorMap[Object.keys(colorMap).find(k => (meta.color||'').includes(k))] || '#404858';
+    const p = pos[n]; const meta = AGENT_META[n] || {};
+    const col = resolveColor(meta.color);
     const isFocus = n === focusAgent;
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, isFocus ? 18 : 13, 0, 2 * Math.PI);
-    ctx.fillStyle = '#111520';
-    ctx.fill();
-    ctx.strokeStyle = col;
-    ctx.lineWidth   = isFocus ? 2.5 : 1.5;
-    ctx.stroke();
-
-    ctx.fillStyle   = col;
-    ctx.font        = 'bold 9px "JetBrains Mono", monospace';
-    ctx.textAlign   = 'center';
-    ctx.textBaseline= 'middle';
+    ctx.beginPath(); ctx.arc(p.x, p.y, isFocus ? 18 : 13, 0, 2 * Math.PI);
+    ctx.fillStyle = '#0d1120'; ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = isFocus ? 2.5 : 1.5; ctx.stroke();
+    ctx.fillStyle = col; ctx.font = 'bold 9px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText((meta.abbr || n.slice(0,2).toUpperCase()), p.x, p.y);
-
-    ctx.fillStyle   = '#6b7280';
-    ctx.font        = '10px "General Sans", sans-serif';
+    ctx.fillStyle = '#6b7280'; ctx.font = '10px "General Sans", sans-serif';
     ctx.fillText(meta.label || n, p.x, p.y + (isFocus ? 28 : 24));
   });
 }
@@ -2116,13 +2610,13 @@ async function loadAgentState() {
       states.map(s => {
         const m = AGENT_META[s.agent] || {};
         return '<div style="background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-3)">' +
-          '<div style="font-weight:600;color:'+(m.color||'var(--text)')+';margin-bottom:4px">' + escHtml(m.label||s.agent) + '</div>' +
-          '<div style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-faint)">turns: ' + (s.lifetime_turns||0) + '</div>' +
-          '<div style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-faint)">last: ' + (s.last_seen ? new Date(s.last_seen).toLocaleString() : 'never') + '</div>' +
-          '</div>';
+          '<div style="font-weight:600;color:'+(m.color||'var(--text)')+';margin-bottom:4px">'+escHtml(m.label||s.agent)+'</div>' +
+          '<div style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-faint)">turns: '+(s.lifetime_turns||0)+'</div>' +
+          '<div style="font-family:var(--font-mono);font-size:var(--text-xs);color:var(--text-faint)">last: '+(s.last_seen ? new Date(s.last_seen).toLocaleString() : 'never')+'</div>' +
+        '</div>';
       }).join('') + '</div>';
   } catch (e) {
-    body.innerHTML = '<span style="color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: ' + escHtml(e.message) + '</span>';
+    body.innerHTML = '<span style="color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</span>';
   }
 }
 
@@ -2134,10 +2628,10 @@ function initSamsaraCast() {
   const roleColors = { protagonist: 'var(--cyan)', antagonist: 'var(--red)', commentator: 'var(--amber)' };
   grid.innerHTML = SAMSARA_CAST.map(c =>
     '<div class="cast-card">' +
-      '<div class="cast-name" style="color:' + (roleColors[c.role]||'var(--text)') + '">' + escHtml(c.label) + '</div>' +
-      '<div class="cast-role">' + escHtml(c.role) + '</div>' +
-      '<div class="cast-oneliner">"' + escHtml(c.oneliner) + '"</div>' +
-      '<div class="cast-provider">' + escHtml(c.provider) + '</div>' +
+      '<div class="cast-name" style="color:'+(roleColors[c.role]||'var(--text)')+'">'+escHtml(c.label)+'</div>' +
+      '<div class="cast-role">'+escHtml(c.role)+'</div>' +
+      '<div class="cast-oneliner">"'+escHtml(c.oneliner)+'"</div>' +
+      '<div class="cast-provider">'+escHtml(c.provider)+'</div>' +
     '</div>'
   ).join('');
 }
@@ -2147,9 +2641,15 @@ function selectMode(el) {
   el.classList.add('selected');
 }
 
+function saveMindBridgeUrl() {
+  const val = document.getElementById('mindbridge-url').value.trim();
+  if (val) localStorage.setItem('soulos_mindbridge_url', val);
+}
+
 async function startDebate() {
   const mindbridgeUrl = document.getElementById('mindbridge-url').value.trim();
   if (!mindbridgeUrl) { alert('Enter the MindBridge Router URL (e.g. https://your-app.railway.app)'); return; }
+  saveMindBridgeUrl();
 
   const title     = document.getElementById('debate-title').value.trim();
   const thesis    = document.getElementById('debate-thesis').value.trim();
@@ -2174,43 +2674,38 @@ async function startDebate() {
   try {
     const payload = { paper_title: title, thesis, mode, rounds, include_reasoning: reasoning };
     if (seed) payload.test_questions = [seed];
-
     const res  = await fetch(mindbridgeUrl + '/v1/debate', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     spinner.style.display = 'none';
     header.textContent    = 'Transcript — ' + escHtml(title);
-
     const turns = data.turns || data.transcript || [];
     if (!turns.length) {
-      body.innerHTML = '<pre style="padding:var(--space-4);font-size:var(--text-xs);font-family:var(--font-mono);color:var(--text-muted);white-space:pre-wrap">' + escHtml(JSON.stringify(data, null, 2)) + '</pre>';
+      body.innerHTML = '<pre style="padding:var(--space-4);font-size:var(--text-xs);font-family:var(--font-mono);color:var(--text-muted);white-space:pre-wrap">'+escHtml(JSON.stringify(data, null, 2))+'</pre>';
       return;
     }
-
     const roleColors = { protagonist: 'var(--cyan)', antagonist: 'var(--red)', commentator: 'var(--amber)', judge: 'var(--green)' };
     body.innerHTML = turns.map(t =>
       '<div class="debate-turn">' +
         '<div class="debate-turn-header">' +
-          '<span class="debate-speaker" style="color:' + (roleColors[t.role]||'var(--text)') + '">' + escHtml(t.speaker||'?') + '</span>' +
-          '<span class="debate-role-badge">' + escHtml(t.role||'') + '</span>' +
-          (t.model ? '<span style="color:var(--text-faint);font-size:10px">' + escHtml(t.model) + '</span>' : '') +
+          '<span class="debate-speaker" style="color:'+(roleColors[t.role]||'var(--text)')+'">'+escHtml(t.speaker||'?')+'</span>' +
+          '<span class="debate-role-badge">'+escHtml(t.role||'')+'</span>' +
+          (t.model ? '<span style="color:var(--text-faint);font-size:10px">'+escHtml(t.model)+'</span>' : '') +
         '</div>' +
-        '<div class="debate-argument">' + escHtml(t.argument || t.response || t.content || '') + '</div>' +
+        '<div class="debate-argument">'+escHtml(t.argument||t.response||t.content||'')+'</div>' +
       '</div>'
     ).join('');
-
     if (data.summary) {
       body.innerHTML += '<div style="padding:var(--space-4);background:var(--surface-2);border-top:1px solid var(--border-subtle)">' +
         '<div style="font-size:var(--text-xs);font-family:var(--font-mono);color:var(--text-muted);margin-bottom:var(--space-2)">summary</div>' +
-        '<pre style="font-size:var(--text-xs);color:var(--text-muted);white-space:pre-wrap">' + escHtml(typeof data.summary === 'object' ? JSON.stringify(data.summary, null, 2) : data.summary) + '</pre>' +
-        '</div>';
+        '<pre style="font-size:var(--text-xs);color:var(--text-muted);white-space:pre-wrap">'+escHtml(typeof data.summary === 'object' ? JSON.stringify(data.summary, null, 2) : data.summary)+'</pre>' +
+      '</div>';
     }
   } catch (e) {
     spinner.style.display = 'none';
-    body.innerHTML = '<div style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: ' + escHtml(e.message) + '</div>';
+    body.innerHTML = '<div style="padding:var(--space-4);color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</div>';
   }
 }
 
@@ -2219,15 +2714,15 @@ async function startDebate() {
 // ===================================================================
 const DISPATCH_EXAMPLES = {
   route:    [
-    { label: 'Ask Rostam',       color: 'var(--purple)', body: { userRequest: '@claude:route What is the current state of the Constellation?' } },
-    { label: 'Ask Orion',        color: 'var(--blue)',   body: { userRequest: '@orion:route Summarize recent foundry activity' } },
-    { label: 'Ask Triptych',     color: 'var(--amber)',  body: { userRequest: '@triptych:route What patterns do you see across agents?' } },
-    { label: 'Ask Mephisto',     color: 'var(--red)',    body: { userRequest: '@mephistopheles:reflect What am I not seeing?' } },
-    { label: 'Comet research',   color: 'var(--cyan)',   body: { userRequest: '@comet:research Pudgalavada personal identity Buddhism 2025' } },
+    { label: 'Ask Rostam',     color: 'var(--purple)', body: { userRequest: '@claude:route What is the current state of the Constellation?' } },
+    { label: 'Ask Orion',      color: 'var(--blue)',   body: { userRequest: '@orion:route Summarize recent foundry activity' } },
+    { label: 'Ask Triptych',   color: 'var(--amber)',  body: { userRequest: '@triptych:route What patterns do you see across agents?' } },
+    { label: 'Ask Mephisto',   color: 'var(--red)',    body: { userRequest: '@mephistopheles:reflect What am I not seeing?' } },
+    { label: 'Comet research', color: 'var(--cyan)',   body: { userRequest: '@comet:research Pudgalavada personal identity Buddhism 2025' } },
   ],
   dispatch: [
-    { label: 'To Notion',   color: 'var(--cyan)', body: { source: 'switchboard', destination: 'notion', payload: 'A new insight has surfaced.' } },
-    { label: 'To Discord',  color: 'var(--blue)', body: { source: 'switchboard', destination: 'discord', payload: 'Signal from the Constellation.' } },
+    { label: 'To Notion',  color: 'var(--cyan)', body: { source: 'switchboard', destination: 'notion', payload: 'A new insight has surfaced.' } },
+    { label: 'To Discord', color: 'var(--blue)', body: { source: 'switchboard', destination: 'discord', payload: 'Signal from the Constellation.' } },
   ],
   message: [
     { label: 'Claude → Orion',   color: 'var(--purple)', body: { from: 'claude', to: 'orion',   intent: 'handoff', body: 'Passing context to the foundry.' } },
@@ -2235,23 +2730,23 @@ const DISPATCH_EXAMPLES = {
     { label: 'Comet → Claude',   color: 'var(--cyan)',   body: { from: 'comet',  to: 'claude',   intent: 'relay',   body: 'New research findings.' } },
   ],
   chain: [
-    { label: '3-hop',      color: 'var(--amber)', body: { origin: 'claude', chain: ['claude','orion','triptych'],                        goal: 'Evaluate learning trajectory.' } },
-    { label: 'Full sweep', color: 'var(--green)', body: { origin: 'claude', chain: ['claude','orion','triptych','mephistopheles'],        goal: 'Full constellation assessment.' } },
+    { label: '3-hop',      color: 'var(--amber)', body: { origin: 'claude', chain: ['claude','orion','triptych'],                   goal: 'Evaluate learning trajectory.' } },
+    { label: 'Full sweep', color: 'var(--green)', body: { origin: 'claude', chain: ['claude','orion','triptych','mephistopheles'],   goal: 'Full constellation assessment.' } },
   ],
   parietal: [
-    { label: 'Surface dormant', color: 'var(--purple)', body: { context: 'What forgotten waypoints need attention?' } },
-    { label: 'Narrative gravity', color: 'var(--cyan)', body: { context: 'narrative growth and recurring themes' } },
+    { label: 'Surface dormant',   color: 'var(--purple)', body: { context: 'What forgotten waypoints need attention?' } },
+    { label: 'Narrative gravity', color: 'var(--cyan)',   body: { context: 'narrative growth and recurring themes' } },
   ],
   converse: [
-    { label: 'Campfire (2 rounds)', color: 'var(--amber)', body: { agents: ['claude','orion','triptych'], seed: 'What is the constellation becoming?', rounds: 2, mode: 'campfire' } },
-    { label: 'Mephisto + Rostam',   color: 'var(--red)',   body: { agents: ['claude','mephistopheles'],   seed: 'Where is the blindspot?',              rounds: 2, mode: 'debate'   } },
+    { label: 'Campfire (2 turns)', color: 'var(--amber)', body: { agents: ['claude','orion','triptych'], seed: 'What is the constellation becoming?', turns: 2, mode: 'campfire' } },
+    { label: 'Mephisto + Rostam',  color: 'var(--red)',   body: { agents: ['claude','mephistopheles'],   seed: 'Where is the blindspot?',             turns: 2, mode: 'debate'  } },
   ],
   log: [
     { label: 'Session event', color: 'var(--green)', body: { event: 'switchboard_test', detail: 'Testing quick dispatch.' } },
   ],
   chat: [
-    { label: 'Chat Rostam',  color: 'var(--purple)', body: { messages: [{ role: 'user', content: 'Hello Rostam. State of the Constellation?' }] } },
-    { label: 'Quick Q',      color: 'var(--cyan)',   body: { messages: [{ role: 'user', content: 'Which agents are online?' }] } },
+    { label: 'Chat Rostam', color: 'var(--purple)', body: { messages: [{ role: 'user', content: 'Hello Rostam. State of the Constellation?' }] } },
+    { label: 'Quick Q',     color: 'var(--cyan)',   body: { messages: [{ role: 'user', content: 'Which agents are online?' }] } },
   ],
   thread: [
     { label: 'New thread', color: 'var(--cyan)', body: { name: 'Samsara debrief' } },
@@ -2263,8 +2758,8 @@ function updateDispatchExample() {
   const chips    = document.getElementById('disp-chips');
   const examples = DISPATCH_EXAMPLES[endpoint] || [];
   chips.innerHTML = examples.map((ex, i) =>
-    '<button class="chip" onclick="fillDispatch(\'' + endpoint + '\',' + i + ')">' +
-      '<span class="chip-dot" style="background:' + ex.color + '"></span>' + escHtml(ex.label) +
+    '<button class="chip" onclick="fillDispatch(\\''+endpoint+'\\','+i+')">' +
+      '<span class="chip-dot" style="background:'+ex.color+'"></span>'+escHtml(ex.label) +
     '</button>'
   ).join('');
 }
@@ -2278,23 +2773,16 @@ function fillDispatch(endpoint, i) {
 }
 
 async function fireDispatch() {
-  const endpoint  = document.getElementById('disp-endpoint').value;
-  const target    = document.getElementById('disp-target').value;
-  const bodyStr   = document.getElementById('disp-body').value.trim() || '{}';
+  const endpoint   = document.getElementById('disp-endpoint').value;
+  const target     = document.getElementById('disp-target').value;
+  const bodyStr    = document.getElementById('disp-body').value.trim() || '{}';
   const resultCard = document.getElementById('dispatch-result-card');
   const resultSt   = document.getElementById('dispatch-result-status');
   const resultBody = document.getElementById('dispatch-result-body');
 
   const pathMap = {
-    route:    '/api/route',
-    dispatch: '/dispatch',
-    message:  '/message',
-    chain:    '/chain',
-    parietal: '/parietal',
-    converse: '/converse',
-    log:      '/log',
-    chat:     '/v1/chat/completions',
-    thread:   '/thread',
+    route: '/api/route', dispatch: '/dispatch', message: '/message', chain: '/chain',
+    parietal: '/parietal', converse: '/converse', log: '/log', chat: '/v1/chat/completions', thread: '/thread',
   };
 
   const url = (target === 'api' ? API.api : API.siddhartha) + pathMap[endpoint];
@@ -2308,18 +2796,13 @@ async function fireDispatch() {
   try { body = JSON.parse(bodyStr); } catch { resultBody.textContent = 'Body must be valid JSON.'; return; }
 
   try {
-    const t0   = performance.now();
-    const res  = await fetch(url, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(body),
-    });
-    const ms   = Math.round(performance.now() - t0);
-    const ct   = res.headers.get('content-type') || '';
+    const t0  = performance.now();
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const ms  = Math.round(performance.now() - t0);
+    const ct  = res.headers.get('content-type') || '';
     let rb;
     if (ct.includes('json')) { rb = JSON.stringify(await res.json(), null, 2); }
     else { rb = await res.text(); }
-
     resultSt.className   = 'result-status ' + (res.ok ? 'ok' : 'err');
     resultSt.textContent = 'POST ' + url + ' → ' + res.status + ' ' + res.statusText + ' (' + ms + 'ms)';
     resultBody.textContent = rb;
@@ -2343,27 +2826,22 @@ function renderInfraRoutes() {
   const groups = [
     { label: 'api.soul-os.cc', color: 'var(--amber)', routes: ROUTES.api },
     { label: 'Mailbox / KV',   color: 'var(--cyan)',  routes: ROUTES.mailbox },
+    { label: 'Campfire',       color: 'var(--gold)',  routes: ROUTES.campfire },
   ];
-
   container.innerHTML = groups.map(g => {
     const probeable = g.routes.filter(r => r.method === 'GET' && !r.path.includes(':') && !r.path.includes('*'));
     return '<div class="route-group" style="margin-bottom:var(--space-3)">' +
       '<div class="route-group-header" onclick="toggleGroup(this)">' +
         '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
-        '<span class="group-label" style="color:' + g.color + '">' + escHtml(g.label) + '</span>' +
-        '<span class="group-count">' + g.routes.length + ' routes</span>' +
+        '<span class="group-label" style="color:'+g.color+'">'+escHtml(g.label)+'</span>' +
+        '<span class="group-count">'+g.routes.length+' routes</span>' +
       '</div>' +
       '<ul class="route-list">' +
-        g.routes.map((r, i) =>
-          '<li class="route-item" id="ri-' + g.label.replace(/[^a-z0-9]/gi,'_') + '-' + i + '">' +
-            '<span class="method-badge method-' + r.method + '">' + r.method + '</span>' +
-            '<div>' +
-              '<div class="route-path">' + escHtml(r.path) + '</div>' +
-              '<div class="route-desc">' + escHtml(r.desc) + '</div>' +
-            '</div>' +
-            (r.method === 'GET' && !r.path.includes(':') && !r.path.includes('*')
-              ? '<button class="btn-probe" onclick="probeInfraRoute(\'' + escAttr(g.label) + '\',' + i + ')">Probe</button>'
-              : '<span></span>') +
+        g.routes.map(r =>
+          '<li class="route-item">' +
+            '<span class="method-badge method-'+r.method+'">'+r.method+'</span>' +
+            '<div><div class="route-path">'+escHtml(r.path)+'</div><div class="route-desc">'+escHtml(r.desc)+'</div></div>' +
+            (probeable.find(p => p.path === r.path) ? '<button class="btn-probe" onclick="probeRoute(this,\\''+escAttr(API.api + r.path)+'\\')">probe</button>' : '<span></span>') +
           '</li>'
         ).join('') +
       '</ul>' +
@@ -2371,93 +2849,71 @@ function renderInfraRoutes() {
   }).join('');
 }
 
-async function probeInfraRoute(groupLabel, i) {
-  const groupKey = groupLabel.replace(/[^a-z0-9]/gi, '_');
-  const item  = document.getElementById('ri-' + groupKey + '-' + i);
-  if (!item) return;
+function toggleGroup(header) {
+  header.classList.toggle('collapsed');
+  const list = header.nextElementSibling;
+  if (list) list.classList.toggle('hidden');
+}
 
-  const group  = ROUTES[groupLabel === 'api.soul-os.cc' ? 'api' : 'mailbox'];
-  const route  = group[i];
-  const url    = API.api + route.path;
-  const btn    = item.querySelector('.btn-probe');
-  const exist  = item.querySelector('.probe-result');
-  if (exist) { exist.remove(); return; }
-
-  if (btn) { btn.textContent = '…'; btn.style.opacity = '0.5'; }
-
-  const box = document.createElement('div');
-  box.className  = 'probe-result';
-  box.style.gridColumn = '1/-1';
-  box.style.marginTop  = 'var(--space-2)';
-
+async function probeRoute(btn, url) {
+  const li = btn.closest('.route-item');
+  let resultEl = li.querySelector('.probe-result');
+  if (!resultEl) {
+    resultEl = document.createElement('div');
+    resultEl.className = 'probe-result';
+    li.appendChild(resultEl);
+  }
+  resultEl.textContent = 'Probing…';
   try {
     const t0  = performance.now();
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     const ms  = Math.round(performance.now() - t0);
     const ct  = res.headers.get('content-type') || '';
     let rb;
-    if (ct.includes('json')) rb = JSON.stringify(await res.json(), null, 2);
-    else rb = await res.text();
-    box.textContent = res.status + ' ' + res.statusText + ' (' + ms + 'ms)\n\n' + rb;
-    box.style.color = res.ok ? 'var(--green)' : 'var(--red)';
+    if (ct.includes('json')) { rb = JSON.stringify(await res.json(), null, 2); }
+    else { rb = await res.text(); }
+    resultEl.textContent = res.status + ' ' + res.statusText + ' (' + ms + 'ms)\\n\\n' + rb;
   } catch (e) {
-    box.textContent = 'ERROR: ' + e.message;
-    box.style.color = 'var(--red)';
+    resultEl.textContent = 'Error: ' + e.message;
   }
-
-  item.appendChild(box);
-  if (btn) { btn.textContent = 'Probe'; btn.style.opacity = ''; }
-}
-
-function toggleGroup(header) {
-  header.classList.toggle('collapsed');
-  header.nextElementSibling.classList.toggle('hidden');
 }
 
 async function loadWaypoints() {
   const body = document.getElementById('waypoints-body');
   body.innerHTML = '<span class="spinner"></span>';
   try {
-    const res  = await fetch(API.siddhartha + '/waypoints');
+    const res  = await fetch(API.api + '/waypoints');
     const data = await res.json();
-    body.innerHTML = '<ul style="list-style:none">' +
-      Object.entries(data).map(([k,v]) =>
-        '<li style="display:flex;align-items:baseline;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--border-subtle);font-size:var(--text-xs)">' +
-          '<span style="font-family:var(--font-mono);color:var(--cyan-dim);min-width:200px;flex-shrink:0">' + escHtml(k) + '</span>' +
-          '<span style="color:var(--text-muted);word-break:break-all">' +
-            (typeof v === 'string' && v.startsWith('http')
-              ? '<a href="' + escAttr(v) + '" target="_blank" rel="noopener noreferrer">' + escHtml(v) + '</a>'
-              : escHtml(String(v))) +
-          '</span>' +
-        '</li>'
-      ).join('') +
-    '</ul>';
+    const wps  = data.waypoints || data || [];
+    if (!wps.length) { body.innerHTML = '<div style="color:var(--text-faint)">No waypoints registered.</div>'; return; }
+    body.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:var(--space-2)">' +
+      wps.map(w =>
+        '<div style="background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3)">' +
+          '<div style="font-weight:600;font-size:var(--text-xs)">'+escHtml(w.label||w.id||'?')+'</div>' +
+          (w.description ? '<div style="font-size:10px;color:var(--text-faint)">'+escHtml(w.description)+'</div>' : '') +
+        '</div>'
+      ).join('') + '</div>';
   } catch (e) {
-    body.innerHTML = '<span style="color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: ' + escHtml(e.message) + '</span>';
+    body.innerHTML = '<span style="color:var(--red);font-size:var(--text-xs);font-family:var(--font-mono)">Error: '+escHtml(e.message)+'</span>';
   }
 }
 
 // ===================================================================
-// UTILS
+// BOOT
 // ===================================================================
-function escHtml(str) {
-  if (typeof str !== 'string') str = String(str);
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function escAttr(str) {
-  if (typeof str !== 'string') str = String(str);
-  return str.replace(/"/g, '&quot;');
-}
+(function init() {
+  initRTPills();
+  initSamsaraCast();
+  renderInfraRoutes();
+  updateDispatchExample();
 
-// ===================================================================
-// INIT
-// ===================================================================
-initRTPills();
-initSamsaraCast();
-renderInfraRoutes();
-updateDispatchExample();
-probeAll();
+  // Restore MindBridge URL from localStorage
+  const savedMb = localStorage.getItem('soulos_mindbridge_url');
+  if (savedMb) document.getElementById('mindbridge-url').value = savedMb;
+
+  // Auto-probe on load
+  setTimeout(probeAll, 400);
+})();
 </script>
 </body>
-</html>
-`;
+</html>`;

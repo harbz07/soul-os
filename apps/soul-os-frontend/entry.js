@@ -6,6 +6,11 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
 
+    // Root redirect → switchboard
+    if (pathname === "/" || pathname === "") {
+      return Response.redirect(new URL("/switchboard", request.url).toString(), 302);
+    }
+
     // Serve Constellation Switchboard UI
     if (pathname === "/switchboard" || pathname === "/switchboard/") {
       return new Response(SWITCHBOARD_HTML, {
