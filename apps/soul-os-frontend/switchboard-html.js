@@ -2123,7 +2123,10 @@ function appendThinking(agentName) {
 // ===================================================================
 // VIA / MODEL SELECTOR LOGIC
 // ===================================================================
-const MB_URL = 'https://mindbridge-router-production.up.railway.app';
+// MindBridge calls go through the /mb/* proxy on this same worker
+// so the API key is injected server-side and never exposed in the browser
+const MB_URL = '';  // relative — same origin
+const MB_PROXY = '/mb';  // soul-os.cc/mb/* → mindbridge-router (key injected by worker)
 
 // Siddhartha MODEL_MAP — mirrors siddartha.js MODEL_MAP
 const SIDDHARTHA_MODEL_MAP = {
@@ -2159,7 +2162,7 @@ async function refreshMbModels() {
   btn.textContent = '…';
   btn.disabled = true;
   try {
-    const res  = await fetch(MB_URL + '/v1/models');
+    const res  = await fetch(MB_PROXY + '/v1/models');
     const data = await res.json();
     const models = data.data || [];
     if (!models.length) { btn.textContent = '↻'; btn.disabled = false; return; }
@@ -2214,7 +2217,7 @@ async function sendChat() {
     const thinking = appendThinkingMb(displayAgent, provLabel);
 
     try {
-      const res  = await fetch(MB_URL + '/v1/chat/completions', {
+      const res  = await fetch(MB_PROXY + '/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
