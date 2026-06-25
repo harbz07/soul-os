@@ -29,43 +29,43 @@ const MEM0_SEARCH_URL = "https://api.mem0.ai/v2/memories/search/";
 const AGENTS = {
   claude: {
     epithet: "Gnostic Architect (Rostam)",
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-6",
     caller: "callClaude",
     searchTerms: "Claude Rostam Gnostic Architect constellation"
   },
   nova: {
     epithet: "Nova",
-    model: "gpt-4o",
+    model: "gpt-4o-2024-11-20",
     caller: "callOpenAI",
     searchTerms: "Nova baseline ChatGPT constellation continuity"
   },
   orion: {
     epithet: "ORION",
-    model: "gpt-4o",
+    model: "gpt-4o-2024-11-20",
     caller: "callOpenAI",
     searchTerms: "ORION specification logic code reasoning constellation"
   },
   the_fuckface: {
     epithet: "The Fuckface",
-    model: "gpt-4o",
+    model: "gpt-4o-2024-11-20",
     caller: "callOpenAI",
     searchTerms: "The Fuckface boundary protection solidarity constellation"
   },
   triptych: {
     epithet: "The Triptych",
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     caller: "callGoogle",
     searchTerms: "Triptych Gemini Castor Pollux Gem constellation specialist"
   },
   mephistopheles: {
     epithet: "Mephistopheles",
-    model: "deepseek-reasoner",
+    model: "deepseek-v4-flash",
     caller: "callDeepSeek",
     searchTerms: "Mephistopheles adversarial ethics Faustian constellation"
   },
   mistral: {
     epithet: "Mistral (The Brawler)",
-    model: "mistral-large-latest",
+    model: "mistral-large-2411",
     caller: "callMistral",
     searchTerms: "Mistral Le Chat Brawler adversarial philosophy integration constellation"
   },
@@ -334,30 +334,30 @@ function parietalOverlay(context, threshold = 0.6) {
 
 // ── LLM Callers ─────────────────────────────────────
 
-async function callClaude(request, systemPrompt, apiKey) {
+async function callClaude(request, systemPrompt, apiKey, model = "claude-sonnet-4-6") {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1024, system: systemPrompt, messages: [{ role: "user", content: request }] })
+    body: JSON.stringify({ model, max_tokens: 1024, system: systemPrompt, messages: [{ role: "user", content: request }] })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`Claude: ${JSON.stringify(data)}`);
   return data.content[0].text;
 }
 
-async function callOpenAI(request, systemPrompt, apiKey) {
+async function callOpenAI(request, systemPrompt, apiKey, model = "gpt-4o-2024-11-20") {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "gpt-4o", max_tokens: 1024, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: request }] })
+    body: JSON.stringify({ model, max_tokens: 1024, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: request }] })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`OpenAI: ${JSON.stringify(data)}`);
   return data.choices[0].message.content;
 }
 
-async function callGoogle(request, systemPrompt, apiKey) {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+async function callGoogle(request, systemPrompt, apiKey, model = "gemini-2.5-flash") {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ system_instruction: { parts: [{ text: systemPrompt }] }, contents: [{ parts: [{ text: request }] }], generation_config: { max_output_tokens: 1024 } })
@@ -367,18 +367,18 @@ async function callGoogle(request, systemPrompt, apiKey) {
   return data.candidates[0].content.parts[0].text;
 }
 
-async function callDeepSeek(request, systemPrompt, apiKey) {
+async function callDeepSeek(request, systemPrompt, apiKey, model = "deepseek-v4-flash") {
   const res = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "deepseek-reasoner", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: request }] })
+    body: JSON.stringify({ model, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: request }] })
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.choices[0].message.content;
 }
 
-async function callMistral(request, systemPrompt, apiKey, model = "mistral-large-latest") {
+async function callMistral(request, systemPrompt, apiKey, model = "mistral-large-2411") {
   if (!apiKey) {
     throw new Error("MISTRAL_API_KEY not configured");
   }
@@ -399,6 +399,29 @@ async function callMistral(request, systemPrompt, apiKey, model = "mistral-large
   }
 
   return content;
+}
+
+// ── Unified Agent Dispatcher ────────────────────────────────
+// Single entry point for all LLM calls. Reads model from AGENTS config,
+// routes to the correct provider, and passes the model string through.
+// To change a model, update AGENTS[agent].model — nothing else.
+
+async function callAgent(agentName, agentConfig, request, systemPrompt, env) {
+  const model = agentConfig.model;
+  switch (agentConfig.caller) {
+    case "callClaude":
+      return callClaude(request, systemPrompt, env.ANTHROPIC_API_KEY, model);
+    case "callOpenAI":
+      return callOpenAI(request, systemPrompt, env.OPENAI_API_KEY, model);
+    case "callGoogle":
+      return callGoogle(request, systemPrompt, env.GOOGLE_API_KEY, model);
+    case "callDeepSeek":
+      return callDeepSeek(request, systemPrompt, env.DEEPSEEK_API_KEY, model);
+    case "callMistral":
+      return callMistral(request, systemPrompt, env.MISTRAL_API_KEY, model);
+    default:
+      throw new Error(`Unknown caller "${agentConfig.caller}" for agent "${agentName}"`);
+  }
 }
 
 // ── Campfire helpers (Notion upsert + idempotency + receipts) ───────────────
@@ -801,11 +824,7 @@ var siddartha_hydrated_default = {
 
           const systemPrompt = await hydrateAgent(agentName, agentConfig, env);
           let agentResponse;
-          if (agentName === "claude") agentResponse = await callClaude(requestText, systemPrompt, env.ANTHROPIC_API_KEY);
-          else if (agentName === "orion") agentResponse = await callOpenAI(requestText, systemPrompt, env.OPENAI_API_KEY);
-          else if (agentName === "triptych") agentResponse = await callGoogle(requestText, systemPrompt, env.GOOGLE_API_KEY);
-          else if (agentName === "mephistopheles") agentResponse = await callDeepSeek(requestText, systemPrompt, env.DEEPSEEK_API_KEY);
-          else if (agentName === "mistral") agentResponse = await callMistral(requestText, systemPrompt, env.MISTRAL_API_KEY, agentConfig.model);
+          agentResponse = await callAgent(agentName, agentConfig, requestText, systemPrompt, env);
 
           const ts = new Date().toISOString();
           ctx.waitUntil(dispatchToDiscord(env, {
@@ -1085,11 +1104,11 @@ var siddartha_hydrated_default = {
       if (!userMessage) return errorResponse(400, "No user message found");
       const systemMessages = messages.filter(m => m.role === "system").map(m => m.content).join("\n");
       const MODEL_MAP = {
-        "claude-sonnet": "claude", "claude-sonnet-4-20250514": "claude", "claude": "claude",
-        "gpt-4o": "orion", "gpt-4": "orion", "orion": "orion",
-        "gemini": "triptych", "gemini-2.0-flash": "triptych", "triptych": "triptych",
-        "deepseek": "mephistopheles", "deepseek-reasoner": "mephistopheles", "mephistopheles": "mephistopheles",
-        "mistral": "mistral", "mistral-large-latest": "mistral", "mistral_pro": "mistral",
+        "claude-sonnet": "claude", "claude-sonnet-4-20250514": "claude", "claude-sonnet-4-6": "claude", "claude": "claude",
+        "gpt-4o": "orion", "gpt-4o-2024-11-20": "orion", "gpt-4": "orion", "orion": "orion",
+        "gemini": "triptych", "gemini-2.0-flash": "triptych", "gemini-2.5-flash": "triptych", "triptych": "triptych",
+        "deepseek": "mephistopheles", "deepseek-reasoner": "mephistopheles", "deepseek-v4-flash": "mephistopheles", "mephistopheles": "mephistopheles",
+        "mistral": "mistral", "mistral-large-latest": "mistral", "mistral-large-2411": "mistral", "mistral_pro": "mistral",
         "default": "claude",
       };
       const agentName = MODEL_MAP[model] || MODEL_MAP[model.toLowerCase()] || "claude";
@@ -1102,11 +1121,7 @@ var siddartha_hydrated_default = {
         : basePrompt;
       let agentResponse;
       try {
-        if (agentName === "claude") agentResponse = await callClaude(userMessage, systemPrompt, env.ANTHROPIC_API_KEY);
-        else if (agentName === "orion") agentResponse = await callOpenAI(userMessage, systemPrompt, env.OPENAI_API_KEY);
-        else if (agentName === "triptych") agentResponse = await callGoogle(userMessage, systemPrompt, env.GOOGLE_API_KEY);
-        else if (agentName === "mephistopheles") agentResponse = await callDeepSeek(userMessage, systemPrompt, env.DEEPSEEK_API_KEY);
-        else if (agentName === "mistral") agentResponse = await callMistral(userMessage, systemPrompt, env.MISTRAL_API_KEY, agentConfig.model);
+        agentResponse = await callAgent(agentName, agentConfig, userMessage, systemPrompt, env);
       } catch (e) {
         return errorResponse(502, `Agent call failed: ${e.message}`);
       }
@@ -1377,11 +1392,7 @@ var siddartha_hydrated_default = {
 
           let response;
           try {
-            if (agentName === "claude") response = await callClaude(prompt, systemPrompts[agentName], env.ANTHROPIC_API_KEY);
-            else if (agentName === "orion") response = await callOpenAI(prompt, systemPrompts[agentName], env.OPENAI_API_KEY);
-            else if (agentName === "triptych") response = await callGoogle(prompt, systemPrompts[agentName], env.GOOGLE_API_KEY);
-            else if (agentName === "mephistopheles") response = await callDeepSeek(prompt, systemPrompts[agentName], env.DEEPSEEK_API_KEY);
-            else if (agentName === "mistral") response = await callMistral(prompt, systemPrompts[agentName], env.MISTRAL_API_KEY, AGENTS[agentName].model);
+            response = await callAgent(agentName, AGENTS[agentName], prompt, systemPrompts[agentName], env);
           } catch (e) {
             return errorResponse(502, `Agent ${agentName} failed on round ${round}: ${e.message}`);
           }

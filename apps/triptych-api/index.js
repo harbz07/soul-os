@@ -6,6 +6,9 @@ const CORS_HEADERS = {
 
 const SOUL_OS_API = "https://api.soul-os.cc";
 
+// Triptych Gemini model — update here when the model changes, nowhere else.
+const TRIPTYCH_MODEL = "gemini-2.5-flash";
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === "OPTIONS") {
@@ -101,7 +104,7 @@ ${context}If you need to save a memory, append this exact banner to your respons
 }`;
 
         const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${env.GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${TRIPTYCH_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -156,7 +159,7 @@ ${context}If you need to save a memory, append this exact banner to your respons
           response: responseText,
           memory_committed: memoryCommitted,
           contextualized_fragments: contextFragments,
-          model: "gemini-1.5-pro",
+          model: TRIPTYCH_MODEL,
           session_id: session_id || crypto.randomUUID(),
           persona
         }), {

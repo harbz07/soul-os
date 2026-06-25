@@ -3,6 +3,9 @@
 //          POST /campfire/render, GET /campfire/render/latest, GET /campfire/fires
 // Requires env.DB (D1 binding "DB") and env.ANTHROPIC_API_KEY.
 
+// Campfire renderer model — update here when the model changes, nowhere else.
+const CAMPFIRE_RENDERER_MODEL = "claude-opus-4-8";
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -134,7 +137,7 @@ async function callAnthropic(env, events, campfire) {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-opus-4-7",
+      model: CAMPFIRE_RENDERER_MODEL,
       max_tokens: 1024,
       system: RENDERER_SYSTEM_PROMPT,
       messages: [{ role: "user", content: JSON.stringify(userPayload) }],
