@@ -1256,28 +1256,76 @@ select { font-family: var(--font-body); }
       <div class="chat-footer">
         <div class="chat-composer">
           <div class="chat-config">
-            <span class="chat-config-label">agent:</span>
-            <select id="chat-agent" style="width:auto">
-              <option value="claude">Rostam (Claude)</option>
-              <option value="orion">Orion (GPT-4o)</option>
-              <option value="triptych">Triptych (Gemini)</option>
-              <option value="mephistopheles">Mephistopheles (DeepSeek)</option>
-              <option value="comet">Comet (Perplexity)</option>
+            <!-- VIA toggle — drives which model selector is shown -->
+            <span class="chat-config-label">via:</span>
+            <select id="chat-via" style="width:auto" onchange="onViaChange()">
+              <option value="siddhartha">siddhartha</option>
+              <option value="api">api gateway</option>
+              <option value="mindbridge">mindbridge</option>
             </select>
-            <span class="chat-config-label" style="margin-left:var(--space-2)">intent:</span>
-            <select id="chat-intent" style="width:auto">
-              <option value="route">route</option>
-              <option value="reflect">reflect</option>
-              <option value="research">research</option>
-              <option value="critique">critique</option>
-              <option value="create">create</option>
-              <option value="memory">memory</option>
-            </select>
-            <span class="chat-config-label" style="margin-left:var(--space-2)">via:</span>
-            <select id="chat-via" style="width:auto">
-              <option value="api">api.soul-os.cc</option>
-              <option value="siddhartha">siddhartha (direct)</option>
-            </select>
+
+            <!-- SIDDHARTHA mode: agent + intent -->
+            <span id="siddhartha-agent-wrap" style="display:flex;align-items:center;gap:var(--space-2)">
+              <span class="chat-config-label" style="margin-left:var(--space-2)">agent:</span>
+              <select id="chat-agent" style="width:auto" onchange="onAgentChange()">
+                <option value="claude">Rostam · claude-sonnet-4-20250514</option>
+                <option value="orion">Orion · gpt-4o</option>
+                <option value="triptych">Triptych · gemini-2.0-flash</option>
+                <option value="mephistopheles">Mephisto · deepseek-reasoner</option>
+                <option value="mistral">Mistral · mistral-large-latest</option>
+                <option value="comet">Comet · perplexity</option>
+              </select>
+              <span class="chat-config-label" style="margin-left:var(--space-2)">intent:</span>
+              <select id="chat-intent" style="width:auto">
+                <option value="route">route</option>
+                <option value="reflect">reflect</option>
+                <option value="research">research</option>
+                <option value="critique">critique</option>
+                <option value="create">create</option>
+                <option value="memory">memory</option>
+              </select>
+            </span>
+
+            <!-- MINDBRIDGE mode: provider/model dropdown -->
+            <span id="mindbridge-model-wrap" style="display:none;align-items:center;gap:var(--space-2)">
+              <span class="chat-config-label" style="margin-left:var(--space-2)">model:</span>
+              <select id="chat-mb-model" style="width:auto;min-width:220px">
+                <optgroup label="anthropic">
+                  <option value="mindbridge:anthropic/claude-opus-4-6">claude-opus-4-6 ✦</option>
+                  <option value="mindbridge:anthropic/claude-sonnet-4-6">claude-sonnet-4-6 ✦</option>
+                  <option value="mindbridge:anthropic/claude-sonnet-4-5">claude-sonnet-4-5</option>
+                  <option value="mindbridge:anthropic/claude-opus-4-5">claude-opus-4-5</option>
+                  <option value="mindbridge:anthropic/claude-3-5-sonnet-20241022">claude-3-5-sonnet-20241022</option>
+                  <option value="mindbridge:anthropic/claude-3-5-haiku-20241022">claude-3-5-haiku-20241022</option>
+                  <option value="mindbridge:anthropic/claude-3-opus-20240229">claude-3-opus-20240229</option>
+                  <option value="mindbridge:anthropic/claude-3-haiku-20240307">claude-3-haiku-20240307</option>
+                </optgroup>
+                <optgroup label="openai">
+                  <option value="mindbridge:openai/gpt-4o">gpt-4o</option>
+                  <option value="mindbridge:openai/gpt-4o-mini">gpt-4o-mini</option>
+                  <option value="mindbridge:openai/gpt-4-turbo">gpt-4-turbo</option>
+                  <option value="mindbridge:openai/gpt-4">gpt-4</option>
+                  <option value="mindbridge:openai/gpt-3.5-turbo">gpt-3.5-turbo</option>
+                  <option value="mindbridge:openai/o1">o1</option>
+                  <option value="mindbridge:openai/o1-mini">o1-mini</option>
+                  <option value="mindbridge:openai/o1-preview">o1-preview</option>
+                </optgroup>
+                <optgroup label="google">
+                  <option value="mindbridge:google/gemini-2.5-flash">gemini-2.5-flash ✦</option>
+                  <option value="mindbridge:google/gemini-2.5-pro">gemini-2.5-pro ✦</option>
+                  <option value="mindbridge:google/gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                  <option value="mindbridge:google/gemini-3-flash-preview">gemini-3-flash-preview ⚗</option>
+                  <option value="mindbridge:google/gemini-3.1-pro-preview">gemini-3.1-pro-preview ⚗</option>
+                  <option value="mindbridge:google/gemini-2.0-flash">gemini-2.0-flash</option>
+                  <option value="mindbridge:google/gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+                </optgroup>
+                <optgroup label="deepseek">
+                  <option value="mindbridge:deepseek/deepseek-chat">deepseek-chat</option>
+                  <option value="mindbridge:deepseek/deepseek-reasoner">deepseek-reasoner</option>
+                </optgroup>
+              </select>
+              <button class="btn-sm" onclick="refreshMbModels()" title="Reload live model list from MindBridge" style="padding:4px 8px;font-size:10px">↻</button>
+            </span>
           </div>
           <div class="chat-input-row">
             <textarea id="chat-input" placeholder="Drop a thought, meme, question, or paste a link…" rows="1" onkeydown="chatKeydown(event)" oninput="autoResize(this)"></textarea>
@@ -2072,10 +2120,78 @@ function appendThinking(agentName) {
   return div;
 }
 
+// ===================================================================
+// VIA / MODEL SELECTOR LOGIC
+// ===================================================================
+const MB_URL = 'https://mindbridge-router-production.up.railway.app';
+
+// Siddhartha MODEL_MAP — mirrors siddartha.js MODEL_MAP
+const SIDDHARTHA_MODEL_MAP = {
+  claude:         'claude-sonnet-4-20250514',
+  orion:          'gpt-4o',
+  triptych:       'gemini-2.0-flash',
+  mephistopheles: 'deepseek-reasoner',
+  mistral:        'mistral-large-latest',
+  comet:          null,
+};
+
+function onViaChange() {
+  const via = document.getElementById('chat-via').value;
+  const isMb = via === 'mindbridge';
+  const sidWrap = document.getElementById('siddhartha-agent-wrap');
+  const mbWrap  = document.getElementById('mindbridge-model-wrap');
+  sidWrap.style.display = isMb ? 'none' : 'flex';
+  mbWrap.style.display  = isMb ? 'flex' : 'none';
+  // Update placeholder
+  const ta = document.getElementById('chat-input');
+  ta.placeholder = isMb
+    ? 'Send directly to any provider model via MindBridge…'
+    : 'Drop a thought, meme, question, or paste a link…';
+}
+
+function onAgentChange() {
+  // Could add visual accent change here in future
+}
+
+async function refreshMbModels() {
+  const sel = document.getElementById('chat-mb-model');
+  const btn = sel.nextElementSibling;
+  btn.textContent = '…';
+  btn.disabled = true;
+  try {
+    const res  = await fetch(MB_URL + '/v1/models');
+    const data = await res.json();
+    const models = data.data || [];
+    if (!models.length) { btn.textContent = '↻'; btn.disabled = false; return; }
+    // Group by provider
+    const groups = {};
+    models.forEach(m => {
+      // id format: mindbridge:provider/model
+      const parts = m.id.replace('mindbridge:', '').split('/');
+      const provider = parts[0];
+      const model    = parts.slice(1).join('/');
+      if (!groups[provider]) groups[provider] = [];
+      groups[provider].push({ id: m.id, model });
+    });
+    sel.innerHTML = Object.entries(groups).map(([prov, items]) =>
+      '<optgroup label="'+escHtml(prov)+'">' +
+        items.map(i => '<option value="'+escHtml(i.id)+'">'+escHtml(i.model)+'</option>').join('') +
+      '</optgroup>'
+    ).join('');
+    btn.textContent = '↻';
+    btn.disabled = false;
+  } catch (e) {
+    btn.textContent = '!';
+    btn.title = 'Error: ' + e.message;
+    btn.disabled = false;
+  }
+}
+
+// ===================================================================
+// CHAT SEND
+// ===================================================================
 async function sendChat() {
   const input  = document.getElementById('chat-input');
-  const agent  = document.getElementById('chat-agent').value;
-  const intent = document.getElementById('chat-intent').value;
   const via    = document.getElementById('chat-via').value;
   const text   = input.value.trim();
   if (!text) return;
@@ -2084,32 +2200,115 @@ async function sendChat() {
   input.style.height = 'auto';
   document.getElementById('chat-send-btn').disabled = true;
 
-  appendChatMsg('user', 'harvey', text, agent + ':' + intent);
-  chatHistory.push({ role: 'user', content: text });
+  const isMindbridge = via === 'mindbridge';
 
-  const thinking = appendThinking(agent);
-  const baseUrl  = via === 'api' ? API.api : API.siddhartha;
+  if (isMindbridge) {
+    // ── MindBridge path: POST /v1/chat/completions with mindbridge:provider/model ──
+    const mbModel   = document.getElementById('chat-mb-model').value;
+    const provLabel = mbModel.replace('mindbridge:', '').split('/')[0];
+    const modelName = mbModel.replace('mindbridge:', '').split('/').slice(1).join('/');
+    const displayAgent = provLabel + '/' + modelName;
 
-  try {
-    const body = { userRequest: '@' + agent + ':' + intent + ' ' + text };
-    const res  = await fetch(baseUrl + '/api/route', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json();
-    thinking.remove();
-    const reply = data.response || data.content || data.reply || data.message || JSON.stringify(data, null, 2);
-    const metaStr = data.model ? data.model : '';
-    appendChatMsg('assistant', agent, reply, metaStr);
-    chatHistory.push({ role: 'assistant', content: reply, agent });
-  } catch (e) {
-    thinking.remove();
-    appendChatMsg('assistant', agent, 'Error: ' + e.message, '');
+    appendChatMsg('user', 'harvey', text, displayAgent);
+    chatHistory.push({ role: 'user', content: text });
+    const thinking = appendThinkingMb(displayAgent, provLabel);
+
+    try {
+      const res  = await fetch(MB_URL + '/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: mbModel,
+          messages: chatHistory.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      const data = await res.json();
+      thinking.remove();
+      const reply = data.choices?.[0]?.message?.content || data.error?.message || JSON.stringify(data, null, 2);
+      const metaStr = data.model || mbModel;
+      appendChatMsgMb('assistant', displayAgent, provLabel, reply, metaStr);
+      chatHistory.push({ role: 'assistant', content: reply, agent: displayAgent });
+    } catch (e) {
+      thinking.remove();
+      appendChatMsgMb('assistant', displayAgent, provLabel, 'Error: ' + e.message, '');
+    }
+  } else {
+    // ── Siddhartha / API Gateway path: POST /api/route ──
+    const agent  = document.getElementById('chat-agent').value;
+    const intent = document.getElementById('chat-intent').value;
+    const baseUrl = via === 'api' ? API.api : API.siddhartha;
+
+    appendChatMsg('user', 'harvey', text, agent + ':' + intent);
+    chatHistory.push({ role: 'user', content: text });
+    const thinking = appendThinking(agent);
+
+    try {
+      const body = { userRequest: '@' + agent + ':' + intent + ' ' + text };
+      const res  = await fetch(baseUrl + '/api/route', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      thinking.remove();
+      const reply = data.response || data.content || data.reply || data.message || JSON.stringify(data, null, 2);
+      const metaStr = data.model || SIDDHARTHA_MODEL_MAP[agent] || '';
+      appendChatMsg('assistant', agent, reply, metaStr);
+      chatHistory.push({ role: 'assistant', content: reply, agent });
+    } catch (e) {
+      thinking.remove();
+      appendChatMsg('assistant', agent, 'Error: ' + e.message, '');
+    }
   }
 
   document.getElementById('chat-send-btn').disabled = false;
   input.focus();
+}
+
+// MindBridge-specific avatar helpers (provider-colored)
+const MB_PROVIDER_META = {
+  anthropic: { color: 'var(--purple)', abbr: 'AN' },
+  openai:    { color: 'var(--blue)',   abbr: 'OA' },
+  google:    { color: 'var(--amber)',  abbr: 'GG' },
+  deepseek:  { color: 'var(--red)',    abbr: 'DS' },
+};
+
+function appendThinkingMb(displayAgent, provider) {
+  const container = document.getElementById('chat-messages');
+  const empty = document.getElementById('chat-empty');
+  if (empty) empty.remove();
+  const meta = MB_PROVIDER_META[provider] || { color: 'var(--cyan)', abbr: provider.slice(0,2).toUpperCase() };
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id = 'thinking-bubble';
+  div.innerHTML =
+    '<div class="msg-avatar" style="background:var(--surface);color:'+meta.color+';border:1px solid var(--border-subtle)">'+meta.abbr+'</div>' +
+    '<div class="msg-body">' +
+      '<div class="msg-agent">'+escHtml(displayAgent)+'</div>' +
+      '<div class="msg-bubble thinking"><div class="thinking-dots"><span></span><span></span><span></span></div></div>' +
+    '</div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function appendChatMsgMb(role, displayAgent, provider, text, meta) {
+  const container = document.getElementById('chat-messages');
+  const empty = document.getElementById('chat-empty');
+  if (empty) empty.remove();
+  const m = MB_PROVIDER_META[provider] || { color: 'var(--cyan)', abbr: provider.slice(0,2).toUpperCase() };
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML =
+    '<div class="msg-avatar" style="background:var(--surface);color:'+m.color+';border:1px solid var(--border-subtle)">'+m.abbr+'</div>' +
+    '<div class="msg-body">' +
+      '<div class="msg-agent">'+escHtml(displayAgent)+(meta ? ' <span style="color:var(--text-faint)">· '+escHtml(meta)+'</span>' : '')+'</div>' +
+      '<div class="msg-bubble">'+renderMd(text)+'</div>' +
+      '<div class="msg-meta">'+new Date().toLocaleTimeString()+' · mindbridge</div>' +
+    '</div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
 }
 
 // ===================================================================
