@@ -1286,6 +1286,21 @@ select { font-family: var(--font-body); }
               </select>
             </span>
 
+            <!-- MINDBRIDGE mode: key input row -->
+            <span id="mindbridge-key-wrap" style="display:none;align-items:center;gap:var(--space-2)">
+              <span class="chat-config-label" style="margin-left:var(--space-2)">key:</span>
+              <input
+                id="mb-key-input"
+                type="password"
+                placeholder="Bearer token…"
+                autocomplete="off"
+                spellcheck="false"
+                oninput="onMbKeyInput(this.value)"
+                style="font-family:var(--font-mono);font-size:var(--text-xs);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:4px 8px;width:200px;outline:none"
+              />
+              <span id="mb-key-status" style="font-size:10px;color:var(--text-faint)">not set</span>
+            </span>
+
             <!-- MINDBRIDGE mode: provider/model dropdown -->
             <span id="mindbridge-model-wrap" style="display:none;align-items:center;gap:var(--space-2)">
               <span class="chat-config-label" style="margin-left:var(--space-2)">model:</span>
@@ -2123,10 +2138,9 @@ function appendThinking(agentName) {
 // ===================================================================
 // VIA / MODEL SELECTOR LOGIC
 // ===================================================================
-// MindBridge calls go through the /mb/* proxy on this same worker
-// so the API key is injected server-side and never exposed in the browser
-const MB_URL = '';  // relative — same origin
-const MB_PROXY = '/mb';  // soul-os.cc/mb/* → mindbridge-router (key injected by worker)
+const MB_BASE = 'https://mindbridge-router-production.up.railway.app';
+const MB_PROXY = MB_BASE;  // direct — key supplied by user via input
+let mbApiKey = localStorage.getItem('soulos_mb_key') || '';
 
 // Siddhartha MODEL_MAP — mirrors siddartha.js MODEL_MAP
 const SIDDHARTHA_MODEL_MAP = {
@@ -2141,15 +2155,40 @@ const SIDDHARTHA_MODEL_MAP = {
 function onViaChange() {
   const via = document.getElementById('chat-via').value;
   const isMb = via === 'mindbridge';
-  const sidWrap = document.getElementById('siddhartha-agent-wrap');
-  const mbWrap  = document.getElementById('mindbridge-model-wrap');
-  sidWrap.style.display = isMb ? 'none' : 'flex';
-  mbWrap.style.display  = isMb ? 'flex' : 'none';
-  // Update placeholder
+  const sidWrap    = document.getElementById('siddhartha-agent-wrap');
+  const mbWrap     = document.getElementById('mindbridge-model-wrap');
+  const mbKeyWrap  = document.getElementById('mindbridge-key-wrap');
+  sidWrap.style.display   = isMb ? 'none' : 'flex';
+  mbWrap.style.display    = isMb ? 'flex' : 'none';
+  mbKeyWrap.style.display = isMb ? 'flex' : 'none';
+  // Restore saved key into input
+  if (isMb) {
+    const inp = document.getElementById('mb-key-input');
+    inp.value = mbApiKey;
+    updateMbKeyStatus();
+  }
   const ta = document.getElementById('chat-input');
   ta.placeholder = isMb
     ? 'Send directly to any provider model via MindBridge…'
     : 'Drop a thought, meme, question, or paste a link…';
+}
+
+function onMbKeyInput(val) {
+  mbApiKey = val.trim();
+  localStorage.setItem('soulos_mb_key', mbApiKey);
+  updateMbKeyStatus();
+}
+
+function updateMbKeyStatus() {
+  const el = document.getElementById('mb-key-status');
+  if (!el) return;
+  if (mbApiKey) {
+    el.textContent = '✓ saved';
+    el.style.color = 'var(--cyan)';
+  } else {
+    el.textContent = 'not set';
+    el.style.color = 'var(--text-faint)';
+  }
 }
 
 function onAgentChange() {
@@ -2162,7 +2201,10 @@ async function refreshMbModels() {
   btn.textContent = '…';
   btn.disabled = true;
   try {
-    const res  = await fetch(MB_PROXY + '/v1/models');
+    if (!mbApiKey) { btn.textContent = '↻'; btn.disabled = false; appendChatMsgMb('assistant','system','openai','MindBridge key not set — enter it in the key field.',''); return; }
+    const res  = await fetch(MB_PROXY + '/v1/models', {
+      headers: { 'Authorization': 'Bearer ' + mbApiKey },
+    });
     const data = await res.json();
     const models = data.data || [];
     if (!models.length) { btn.textContent = '↻'; btn.disabled = false; return; }
@@ -2217,9 +2259,15 @@ async function sendChat() {
     const thinking = appendThinkingMb(displayAgent, provLabel);
 
     try {
+      if (!mbApiKey) {
+        thinking.remove();
+        appendChatMsgMb('assistant', displayAgent, provLabel, 'MindBridge key not set — switch to mindbridge via and enter your key in the key field.', '');
+        document.getElementById('chat-send-btn').disabled = false;
+        return;
+      }
       const res  = await fetch(MB_PROXY + '/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + mbApiKey },
         body: JSON.stringify({
           model: mbModel,
           messages: chatHistory.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content })),

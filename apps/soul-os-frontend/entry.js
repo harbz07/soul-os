@@ -33,52 +33,6 @@ export default {
       }
     }
 
-    // MindBridge proxy — injects MINDBRIDGE_API_KEY server-side so the browser never sees it
-    // Routes: /mb/v1/chat/completions, /mb/v1/models, /mb/providers, /mb/v1/debate
-    if (pathname.startsWith("/mb/")) {
-      const mbKey = env.MINDBRIDGE_API_KEY;
-      if (!mbKey) {
-        return new Response(JSON.stringify({ error: "MINDBRIDGE_API_KEY not configured on worker" }), {
-          status: 503,
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        });
-      }
-      const mbBase = "https://mindbridge-router-production.up.railway.app";
-      const upstreamPath = pathname.replace(/^\/mb/, "");
-      const upstreamUrl = mbBase + upstreamPath + (url.search || "");
-
-      // Handle CORS preflight
-      if (request.method === "OPTIONS") {
-        return new Response(null, {
-          status: 204,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          },
-        });
-      }
-
-      const proxyReq = new Request(upstreamUrl, {
-        method: request.method,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${mbKey}`,
-        },
-        body: request.method !== "GET" && request.method !== "HEAD" ? request.body : undefined,
-      });
-
-      const upstream = await fetch(proxyReq);
-      const body = await upstream.text();
-      return new Response(body, {
-        status: upstream.status,
-        headers: {
-          "Content-Type": upstream.headers.get("Content-Type") || "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
-    }
-
     // Delegate all other requests to the existing frontend worker
     return frontendApp.fetch(request, env, ctx);
   },
