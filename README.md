@@ -8,6 +8,7 @@ At its core, soulOS wires together:
 - **soulOS API** – the public gateway Worker that fronts `api.soul-os.cc` and routes external requests into Siddartha.
 - **soulOS Frontend** – the Cognitive Runtime UI served at `soul-os.cc`, used to interact with and observe the constellation.
 - **Comet Courier** – the transit layer for dispatching messages, passages, and waypoints across the ecosystem.
+- **Coleco Caller** - the call router that routes calls between agents and checks caller IDs.
 - **Bridge / Gemini-Notion Proxy** – integration Workers that safely connect external APIs (Mem0, Notion, Discord, etc.) into the Constellation without exposing secrets to the frontend.
 
 The project is backed by a Cerebral SDK and a set of cognitive design primitives (I–Thou psyche map, Ephemeral Context Decay, Meta-Cognitive Double-Gate) that shape how agents remember, forget, and coordinate. 
@@ -74,8 +75,10 @@ soulOS is under active development. Current focus:
 
 - ✅ D1 session/trace/graph layer wired into Siddartha
 - ✅ Samsara (PvE debate engine) added to repo under `apps/samsara/`
-- Cerebral SDK extraction (shared primitives from Siddartha into `packages/`)
+- Agent Registry schema
+- Gemini-compatible API component
+- "Cerebral SDK" Cognitive Architecture Integration (https://basecampgrounds.com; shared primitives from Siddartha into `packages/`)
 - Castor Hub wrangler config + deployment
-- Frontend agent-selector (currently hardcoded to ORION)
+- Frontend agent-selector (model update flexibility yet to be implemented)
 
 ---
